@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov</title>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+    <script src="/trustgov/assets/js/theme.js"></script>
+</head>
+<body>
+    <script>
+        /**
+         * Entry point redirect.
+         * If user is already logged in, go to dashboard.
+         * Otherwise redirect to login page.
+         */
+        const user = localStorage.getItem('trustgov_user');
+        if (user) {
+            window.location.href = '/trustgov/pages/dashboard.html';
+        } else {
+            window.location.href = '/trustgov/login.html';
+        }
+    </script>
+</body>
+</html>
