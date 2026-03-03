@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen">
+
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-landmark text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-white text-lg">TrustGov</span>
+        </div>
+        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
+            <a href="dashboard.html" class="hover:text-white"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+            <a href="budgets.html" class="hover:text-white"><i class="fas fa-wallet mr-1"></i>Budgets</a>
+            <a href="projects.html" class="hover:text-white"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
+            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
+            <a href="feedback.html" class="hover:text-white"><i class="fas fa-comments mr-1"></i>Feedback</a>
+            <a href="users.html" class="text-white font-semibold"><i class="fas fa-users mr-1"></i>Users</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
+            <span id="userRoleBadge"></span>
+            <button id="themeToggleBtn" onclick="toggleTheme()"
+                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
+            </button>
+            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
+        <div class="mb-6 animate__animated animate__fadeInDown">
+            <h2 class="text-2xl font-bold" style="color:var(--text-primary)">User Management</h2>
+            <p class="text-sm mt-1" style="color:var(--text-secondary)">Admin-only view of all registered users.</p>
+        </div>
+
+        <div class="card p-6 animate__animated animate__fadeInUp">
+            <table id="usersTable" class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Barangay</th>
+                        <th>Registered</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Edit Role Modal -->
+    <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-box w-full max-w-md p-8 animate__animated animate__zoomIn">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold" style="color:var(--text-primary)">Edit User Role</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="editUserId"/>
+            <input type="hidden" id="editUserName"/>
+            <input type="hidden" id="editUserEmail"/>
+            <input type="hidden" id="editUserBarangay"/>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">User</label>
+                    <p id="editUserDisplay" class="font-semibold" style="color:var(--text-primary)"></p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Role</label>
+                    <select id="editUserRole" class="form-input">
+                        <option value="citizen">Citizen</option>
+                        <option value="official">Official</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="saveUserRole()" class="btn-primary flex-1"><i class="fas fa-save mr-2"></i>Save</button>
+                    <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+    <script>
+        let usersTable;
+        let currentUser;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = requireAuth();
+            // Redirect non-admins away from this page
+            if (currentUser.role !== 'admin') {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            renderNavUser(currentUser);
+            await loadUsers();
+        });
+
+        async function loadUsers() {
+            const res = await apiGet('/users/read.php');
+            if (res.status !== 'success') { toastError('Failed to load users.'); return; }
+
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = res.data.map(u => `
+                <tr>
+                    <td>${u.id}</td>
+                    <td>${u.full_name}</td>
+                    <td>${u.email}</td>
+                    <td><span class="badge-${u.role}">${u.role.toUpperCase()}</span></td>
+                    <td>${u.barangay}</td>
+                    <td>${u.created_at.slice(0,10)}</td>
+                    <td class="flex gap-2">
+                        <button onclick="openEditModal(${u.id},'${u.full_name}','${u.email}','${u.role}','${u.barangay}')"
+                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
+                        ${u.id !== currentUser.id ? `
+                        <button onclick="deleteUser(${u.id})"
+                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>`).join('');
+
+            if (usersTable) { usersTable.destroy(); }
+            usersTable = $('#usersTable').DataTable({ pageLength: 10 });
+        }
+
+        function openEditModal(id, name, email, role, barangay) {
+            document.getElementById('editUserId').value      = id;
+            document.getElementById('editUserName').value    = name;
+            document.getElementById('editUserEmail').value   = email;
+            document.getElementById('editUserBarangay').value = barangay;
+            document.getElementById('editUserDisplay').textContent = `${name} (${email})`;
+            document.getElementById('editUserRole').value    = role;
+            document.getElementById('editModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
+
+        async function saveUserRole() {
+            const id       = document.getElementById('editUserId').value;
+            const full_name = document.getElementById('editUserName').value;
+            const email    = document.getElementById('editUserEmail').value;
+            const barangay = document.getElementById('editUserBarangay').value;
+            const role     = document.getElementById('editUserRole').value;
+
+            const res = await apiPut('/users/update.php', { id, full_name, email, barangay, role });
+            if (res.status === 'success') { toastSuccess('User role updated.'); closeModal(); await loadUsers(); }
+            else toastError(res.message);
+        }
+
+        async function deleteUser(id) {
+            const result = await Swal.fire({ title: 'Delete User?', text: 'This action cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            if (!result.isConfirmed) return;
+            const res = await apiDelete('/users/delete.php', { id });
+            if (res.status === 'success') { toastSuccess(res.message); await loadUsers(); }
+            else toastError(res.message);
+        }
+    </script>
+</body>
+</html>

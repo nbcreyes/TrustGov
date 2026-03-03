@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Budgets</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-landmark text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-white text-lg">TrustGov</span>
+        </div>
+        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
+            <a href="dashboard.html" class="hover:text-white"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+            <a href="budgets.html" class="text-white font-semibold"><i class="fas fa-wallet mr-1"></i>Budgets</a>
+            <a href="projects.html" class="hover:text-white"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
+            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
+            <a href="feedback.html" class="hover:text-white"><i class="fas fa-comments mr-1"></i>Feedback</a>
+            <a href="users.html" class="hover:text-white" id="usersNavLink"><i class="fas fa-users mr-1"></i>Users</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
+            <span id="userRoleBadge"></span>
+            <button id="themeToggleBtn" onclick="toggleTheme()"
+                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
+            </button>
+            <button onclick="logout()"
+                class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-6 animate__animated animate__fadeInDown">
+            <div>
+                <h2 class="text-2xl font-bold" style="color:var(--text-primary)">Budget Registry</h2>
+                <p class="text-sm mt-1" style="color:var(--text-secondary)">Manage barangay budget allocations.</p>
+            </div>
+            <button id="addBudgetBtn" onclick="openModal()" class="btn-primary hidden">
+                <i class="fas fa-plus mr-2"></i>Add Budget
+            </button>
+        </div>
+
+        <!-- Table Card -->
+        <div class="card p-6 animate__animated animate__fadeInUp">
+            <table id="budgetsTable" class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Barangay</th>
+                        <th>Year</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Posted By</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="budgetsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="budgetModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-box w-full max-w-lg p-8 animate__animated animate__zoomIn">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold" style="color:var(--text-primary)" id="modalTitle">Add Budget</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="budgetId"/>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Barangay Name</label>
+                    <input id="budgetBarangay" type="text" class="form-input" placeholder="Barangay Poblacion"/>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Fiscal Year</label>
+                        <input id="budgetYear" type="number" class="form-input" placeholder="2025"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Total Amount (₱)</label>
+                        <input id="budgetAmount" type="number" class="form-input" placeholder="500000"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Category</label>
+                    <select id="budgetCategory" class="form-input">
+                        <option value="">Select category...</option>
+                        <option value="health">Health</option>
+                        <option value="infrastructure">Infrastructure</option>
+                        <option value="livelihood">Livelihood</option>
+                        <option value="admin">Admin</option>
+                        <option value="education">Education</option>
+                        <option value="others">Others</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Description</label>
+                    <textarea id="budgetDescription" class="form-input" rows="3" placeholder="Budget description..."></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="saveBudget()" class="btn-primary flex-1">
+                        <i class="fas fa-save mr-2"></i>Save Budget
+                    </button>
+                    <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+    <script>
+        let budgetsTable;
+        let currentUser;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = requireAuth();
+            renderNavUser(currentUser);
+            if (currentUser.role !== 'admin') document.getElementById('usersNavLink').classList.add('hidden');
+            // Show Add Budget button for officials only
+            if (currentUser.role === 'official') document.getElementById('addBudgetBtn').classList.remove('hidden');
+            await loadBudgets();
+        });
+
+        /** Loads all budgets and initializes DataTable */
+        async function loadBudgets() {
+            const res = await apiGet('/budgets/read.php');
+            if (res.status !== 'success') { toastError('Failed to load budgets.'); return; }
+
+            const tbody = document.getElementById('budgetsTableBody');
+            tbody.innerHTML = res.data.map(b => `
+                <tr>
+                    <td>${b.id}</td>
+                    <td>${b.barangay_name}</td>
+                    <td>${b.fiscal_year}</td>
+                    <td><span class="capitalize px-2 py-0.5 rounded-full text-xs font-semibold" style="background:var(--accent);color:#fff">${b.category}</span></td>
+                    <td>₱${parseFloat(b.total_amount).toLocaleString()}</td>
+                    <td>${b.posted_by_name}</td>
+                    <td>${b.created_at.slice(0,10)}</td>
+                    <td class="flex gap-2">
+                        ${currentUser.role === 'official' ? `<button onclick="editBudget(${b.id},'${b.barangay_name}',${b.fiscal_year},${b.total_amount},'${b.category}','${b.description}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
+                        ${currentUser.role === 'admin' ? `<button onclick="deleteBudget(${b.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>`).join('');
+
+            if (budgetsTable) { budgetsTable.destroy(); }
+            budgetsTable = $('#budgetsTable').DataTable({ pageLength: 10, responsive: true });
+        }
+
+        /** Opens the add budget modal */
+        function openModal() {
+            document.getElementById('modalTitle').textContent = 'Add Budget';
+            document.getElementById('budgetId').value = '';
+            document.getElementById('budgetBarangay').value = '';
+            document.getElementById('budgetYear').value = '';
+            document.getElementById('budgetAmount').value = '';
+            document.getElementById('budgetCategory').value = '';
+            document.getElementById('budgetDescription').value = '';
+            document.getElementById('budgetModal').classList.remove('hidden');
+        }
+
+        /** Populates modal with existing budget data for editing */
+        function editBudget(id, barangay, year, amount, category, description) {
+            document.getElementById('modalTitle').textContent = 'Edit Budget';
+            document.getElementById('budgetId').value = id;
+            document.getElementById('budgetBarangay').value = barangay;
+            document.getElementById('budgetYear').value = year;
+            document.getElementById('budgetAmount').value = amount;
+            document.getElementById('budgetCategory').value = category;
+            document.getElementById('budgetDescription').value = description;
+            document.getElementById('budgetModal').classList.remove('hidden');
+        }
+
+        /** Closes the budget modal */
+        function closeModal() {
+            document.getElementById('budgetModal').classList.add('hidden');
+        }
+
+        /** Saves or updates a budget entry */
+        async function saveBudget() {
+            const id          = document.getElementById('budgetId').value;
+            const barangay_name = document.getElementById('budgetBarangay').value.trim();
+            const fiscal_year   = document.getElementById('budgetYear').value;
+            const total_amount  = document.getElementById('budgetAmount').value;
+            const category      = document.getElementById('budgetCategory').value;
+            const description   = document.getElementById('budgetDescription').value.trim();
+
+            if (!barangay_name || !fiscal_year || !total_amount || !category) {
+                toastError('Please fill in all required fields.');
+                return;
+            }
+
+            let res;
+            if (id) {
+                res = await apiPut('/budgets/update.php', { id, barangay_name, fiscal_year, total_amount, category, description });
+            } else {
+                res = await apiPost('/budgets/create.php', { barangay_name, fiscal_year, total_amount, category, description });
+            }
+
+            if (res.status === 'success') {
+                toastSuccess(res.message);
+                closeModal();
+                await loadBudgets();
+            } else {
+                toastError(res.message);
+            }
+        }
+
+        /** Confirms and deletes a budget entry */
+        async function deleteBudget(id) {
+            const result = await Swal.fire({
+                title: 'Delete Budget?',
+                text: 'This will also delete all linked projects and expenses.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Yes, delete it!'
+            });
+            if (!result.isConfirmed) return;
+            const res = await apiDelete('/budgets/delete.php', { id });
+            if (res.status === 'success') { toastSuccess(res.message); await loadBudgets(); }
+            else toastError(res.message);
+        }
+    </script>
+</body>
+</html>

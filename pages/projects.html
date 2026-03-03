@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Projects</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-landmark text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-white text-lg">TrustGov</span>
+        </div>
+        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
+            <a href="dashboard.html" class="hover:text-white"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+            <a href="budgets.html" class="hover:text-white"><i class="fas fa-wallet mr-1"></i>Budgets</a>
+            <a href="projects.html" class="text-white font-semibold"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
+            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
+            <a href="feedback.html" class="hover:text-white"><i class="fas fa-comments mr-1"></i>Feedback</a>
+            <a href="users.html" class="hover:text-white" id="usersNavLink"><i class="fas fa-users mr-1"></i>Users</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
+            <span id="userRoleBadge"></span>
+            <button id="themeToggleBtn" onclick="toggleTheme()"
+                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
+            </button>
+            <button onclick="logout()"
+                class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
+        <div class="flex items-center justify-between mb-6 animate__animated animate__fadeInDown">
+            <div>
+                <h2 class="text-2xl font-bold" style="color:var(--text-primary)">Project Tracker</h2>
+                <p class="text-sm mt-1" style="color:var(--text-secondary)">Track all barangay projects and their status.</p>
+            </div>
+            <div class="flex gap-3 items-center">
+                <select id="budgetFilter" onchange="loadProjects()" class="form-input text-sm" style="width:200px">
+                    <option value="">All Budgets</option>
+                </select>
+                <button id="addProjectBtn" onclick="openModal()" class="btn-primary hidden">
+                    <i class="fas fa-plus mr-2"></i>Add Project
+                </button>
+            </div>
+        </div>
+
+        <div class="card p-6 animate__animated animate__fadeInUp">
+            <table id="projectsTable" class="w-full text-sm">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Project Name</th>
+                        <th>Barangay</th>
+                        <th>Contractor</th>
+                        <th>Allocated</th>
+                        <th>Spent</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="projectsTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="projectModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-box w-full max-w-xl p-8 animate__animated animate__zoomIn" style="max-height:90vh;overflow-y:auto">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold" style="color:var(--text-primary)" id="modalTitle">Add Project</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <input type="hidden" id="projectId"/>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Budget</label>
+                    <select id="projectBudgetId" class="form-input"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Project Name</label>
+                    <input id="projectName" type="text" class="form-input" placeholder="Project name"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Description</label>
+                    <textarea id="projectDescription" class="form-input" rows="2"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Contractor</label>
+                    <input id="projectContractor" type="text" class="form-input" placeholder="Contractor name"/>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Allocated Amount (₱)</label>
+                        <input id="projectAllocated" type="number" class="form-input"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Spent Amount (₱)</label>
+                        <input id="projectSpent" type="number" class="form-input" value="0"/>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Start Date</label>
+                        <input id="projectStart" type="date" class="form-input"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">End Date</label>
+                        <input id="projectEnd" type="date" class="form-input"/>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Status</label>
+                    <select id="projectStatus" class="form-input">
+                        <option value="planned">Planned</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="saveProject()" class="btn-primary flex-1"><i class="fas fa-save mr-2"></i>Save Project</button>
+                    <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+    <script>
+        let projectsTable;
+        let currentUser;
+        let allBudgets = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = requireAuth();
+            renderNavUser(currentUser);
+            if (currentUser.role !== 'admin') document.getElementById('usersNavLink').classList.add('hidden');
+            if (currentUser.role === 'official') document.getElementById('addProjectBtn').classList.remove('hidden');
+            await loadBudgetFilter();
+            await loadProjects();
+        });
+
+        /** Loads budgets into the filter dropdown and modal select */
+        async function loadBudgetFilter() {
+            const res = await apiGet('/budgets/read.php');
+            if (res.status !== 'success') return;
+            allBudgets = res.data;
+            const filterEl = document.getElementById('budgetFilter');
+            const modalEl  = document.getElementById('projectBudgetId');
+            allBudgets.forEach(b => {
+                filterEl.innerHTML += `<option value="${b.id}">${b.barangay_name} — ${b.category} (${b.fiscal_year})</option>`;
+                modalEl.innerHTML  += `<option value="${b.id}">${b.barangay_name} — ${b.category} (${b.fiscal_year})</option>`;
+            });
+        }
+
+        /** Loads projects, optionally filtered by budget */
+        async function loadProjects() {
+            const budgetId = document.getElementById('budgetFilter').value;
+            const endpoint = budgetId ? `/projects/read.php?budget_id=${budgetId}` : '/projects/read.php';
+            const res = await apiGet(endpoint);
+            if (res.status !== 'success') { toastError('Failed to load projects.'); return; }
+
+            const statusBadge = { planned: 'status-planned', ongoing: 'status-ongoing', completed: 'status-completed', cancelled: 'status-cancelled' };
+            const tbody = document.getElementById('projectsTableBody');
+            tbody.innerHTML = res.data.map(p => `
+                <tr>
+                    <td>${p.id}</td>
+                    <td>${p.project_name}</td>
+                    <td>${p.barangay_name}</td>
+                    <td>${p.contractor || '—'}</td>
+                    <td>₱${parseFloat(p.allocated_amount).toLocaleString()}</td>
+                    <td>₱${parseFloat(p.spent_amount).toLocaleString()}</td>
+                    <td><span class="${statusBadge[p.status]}">${p.status}</span></td>
+                    <td class="flex gap-2">
+                        ${currentUser.role === 'official' ? `<button onclick='editProject(${JSON.stringify(p)})' class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
+                        ${currentUser.role === 'admin' ? `<button onclick="deleteProject(${p.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>`).join('');
+
+            if (projectsTable) { projectsTable.destroy(); }
+            projectsTable = $('#projectsTable').DataTable({ pageLength: 10 });
+        }
+
+        function openModal() {
+            document.getElementById('modalTitle').textContent = 'Add Project';
+            document.getElementById('projectId').value = '';
+            document.getElementById('projectName').value = '';
+            document.getElementById('projectDescription').value = '';
+            document.getElementById('projectContractor').value = '';
+            document.getElementById('projectAllocated').value = '';
+            document.getElementById('projectSpent').value = '0';
+            document.getElementById('projectStart').value = '';
+            document.getElementById('projectEnd').value = '';
+            document.getElementById('projectStatus').value = 'planned';
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function editProject(p) {
+            document.getElementById('modalTitle').textContent = 'Edit Project';
+            document.getElementById('projectId').value          = p.id;
+            document.getElementById('projectBudgetId').value    = p.budget_id;
+            document.getElementById('projectName').value        = p.project_name;
+            document.getElementById('projectDescription').value = p.description;
+            document.getElementById('projectContractor').value  = p.contractor;
+            document.getElementById('projectAllocated').value   = p.allocated_amount;
+            document.getElementById('projectSpent').value       = p.spent_amount;
+            document.getElementById('projectStart').value       = p.start_date;
+            document.getElementById('projectEnd').value         = p.end_date;
+            document.getElementById('projectStatus').value      = p.status;
+            document.getElementById('projectModal').classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('projectModal').classList.add('hidden'); }
+
+        async function saveProject() {
+            const id               = document.getElementById('projectId').value;
+            const budget_id        = document.getElementById('projectBudgetId').value;
+            const project_name     = document.getElementById('projectName').value.trim();
+            const description      = document.getElementById('projectDescription').value.trim();
+            const contractor       = document.getElementById('projectContractor').value.trim();
+            const allocated_amount = document.getElementById('projectAllocated').value;
+            const spent_amount     = document.getElementById('projectSpent').value;
+            const start_date       = document.getElementById('projectStart').value;
+            const end_date         = document.getElementById('projectEnd').value;
+            const status           = document.getElementById('projectStatus').value;
+
+            if (!budget_id || !project_name || !allocated_amount) { toastError('Budget, project name, and allocated amount are required.'); return; }
+
+            let res;
+            if (id) {
+                res = await apiPut('/projects/update.php', { id, budget_id, project_name, description, contractor, allocated_amount, spent_amount, start_date, end_date, status });
+            } else {
+                res = await apiPost('/projects/create.php', { budget_id, project_name, description, contractor, allocated_amount, start_date, end_date, status });
+            }
+
+            if (res.status === 'success') { toastSuccess(res.message); closeModal(); await loadProjects(); }
+            else toastError(res.message);
+        }
+
+        async function deleteProject(id) {
+            const result = await Swal.fire({ title: 'Delete Project?', text: 'All linked expenses will also be deleted.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            if (!result.isConfirmed) return;
+            const res = await apiDelete('/projects/delete.php', { id });
+            if (res.status === 'success') { toastSuccess(res.message); await loadProjects(); }
+            else toastError(res.message);
+        }
+    </script>
+</body>
+</html>

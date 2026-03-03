@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Dashboard</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navbar -->
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-landmark text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-white text-lg">TrustGov</span>
+        </div>
+
+        <!-- Nav Links -->
+        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
+            <a href="dashboard.html" class="text-white font-semibold"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+            <a href="budgets.html" class="hover:text-white"><i class="fas fa-wallet mr-1"></i>Budgets</a>
+            <a href="projects.html" class="hover:text-white"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
+            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
+            <a href="feedback.html" class="hover:text-white"><i class="fas fa-comments mr-1"></i>Feedback</a>
+            <a href="users.html" class="hover:text-white" id="usersNavLink"><i class="fas fa-users mr-1"></i>Users</a>
+        </div>
+
+        <!-- Right Side -->
+        <div class="flex items-center gap-3">
+            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
+            <span id="userRoleBadge"></span>
+            <button id="themeToggleBtn" onclick="toggleTheme()"
+                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
+            </button>
+            <button onclick="logout()"
+                class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Content -->
+    <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
+
+        <!-- Page Header -->
+        <div class="mb-8 animate__animated animate__fadeInDown">
+            <h2 class="text-2xl font-bold" style="color:var(--text-primary)">Dashboard</h2>
+            <p class="text-sm mt-1" style="color:var(--text-secondary)">Overview of barangay budget, projects, and citizen feedback.</p>
+        </div>
+
+        <!-- Stat Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+            <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay:0.1s">
+                <div class="stat-icon" style="background:#2563eb">
+                    <i class="fas fa-peso-sign"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium" style="color:var(--text-secondary)">Total Budget</p>
+                    <p class="text-xl font-bold" style="color:var(--text-primary)" id="statTotalBudget">—</p>
+                </div>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay:0.2s">
+                <div class="stat-icon" style="background:#16a34a">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium" style="color:var(--text-secondary)">Total Spent</p>
+                    <p class="text-xl font-bold" style="color:var(--text-primary)" id="statTotalSpent">—</p>
+                </div>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay:0.3s">
+                <div class="stat-icon" style="background:#d97706">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium" style="color:var(--text-secondary)">Total Projects</p>
+                    <p class="text-xl font-bold" style="color:var(--text-primary)" id="statTotalProjects">—</p>
+                </div>
+            </div>
+            <div class="stat-card animate__animated animate__fadeInUp" style="animation-delay:0.4s">
+                <div class="stat-icon" style="background:#7c3aed">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-medium" style="color:var(--text-secondary)">Total Feedback</p>
+                    <p class="text-xl font-bold" style="color:var(--text-primary)" id="statTotalFeedback">—</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <!-- Doughnut: Budget Utilization -->
+            <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay:0.2s">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-pie mr-2 text-blue-500"></i>Budget by Category
+                </h3>
+                <canvas id="budgetDoughnut" height="220"></canvas>
+            </div>
+
+            <!-- Bar: Project Status -->
+            <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay:0.3s">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-bar mr-2 text-yellow-500"></i>Project Status Breakdown
+                </h3>
+                <canvas id="projectBar" height="220"></canvas>
+            </div>
+
+            <!-- Line: Expense Trend -->
+            <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay:0.4s">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-line mr-2 text-green-500"></i>Monthly Expense Trend
+                </h3>
+                <canvas id="expenseLine" height="220"></canvas>
+            </div>
+
+        </div>
+
+        <!-- Top Feedback -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            <!-- Most Upvoted -->
+            <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay:0.5s">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-thumbs-up mr-2 text-blue-500"></i>Most Upvoted Feedback
+                </h3>
+                <div id="topUpvotedList" class="space-y-3 text-sm"></div>
+            </div>
+
+            <!-- Most Flagged -->
+            <div class="card p-6 animate__animated animate__fadeInUp" style="animation-delay:0.6s">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-flag mr-2 text-red-500"></i>Flagged Feedback
+                </h3>
+                <div id="topFlaggedList" class="space-y-3 text-sm"></div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+
+    <script>
+        /**
+         * Initializes the dashboard page.
+         * Checks auth, renders nav user, loads all analytics data.
+         */
+        document.addEventListener('DOMContentLoaded', async () => {
+            const user = requireAuth();
+            renderNavUser(user);
+
+            // Hide Users nav link for non-admins
+            if (user.role !== 'admin') {
+                document.getElementById('usersNavLink').classList.add('hidden');
+            }
+
+            await loadSummary();
+            await loadBudgetUtilization();
+            await loadProjectStatus();
+            await loadExpenseTrend();
+            await loadTopFeedback();
+        });
+
+        /**
+         * Formats a number as Philippine Peso currency string.
+         * @param {number} amount
+         * @returns {string} Formatted currency
+         */
+        function formatPeso(amount) {
+            return '₱' + parseFloat(amount).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+        }
+
+        /**
+         * Loads and displays the summary stat cards.
+         */
+        async function loadSummary() {
+            const res = await apiGet('/analytics/summary.php');
+            if (res.status === 'success') {
+                document.getElementById('statTotalBudget').textContent   = formatPeso(res.data.total_budget);
+                document.getElementById('statTotalSpent').textContent    = formatPeso(res.data.total_spent);
+                document.getElementById('statTotalProjects').textContent = res.data.total_projects;
+                document.getElementById('statTotalFeedback').textContent = res.data.total_feedback;
+            }
+        }
+
+        /**
+         * Loads budget utilization data and renders the doughnut chart.
+         */
+        async function loadBudgetUtilization() {
+            const res = await apiGet('/analytics/budget_utilization.php');
+            if (res.status !== 'success') return;
+
+            const labels = res.data.map(d => d.category.charAt(0).toUpperCase() + d.category.slice(1));
+            const values = res.data.map(d => parseFloat(d.total_allocated));
+            const colors = ['#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#dc2626'];
+
+            new Chart(document.getElementById('budgetDoughnut'), {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{ data: values, backgroundColor: colors, borderWidth: 2 }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { color: getComputedStyle(document.documentElement).getPropertyValue('--text-primary') } }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Loads project status data and renders the bar chart.
+         */
+        async function loadProjectStatus() {
+            const res = await apiGet('/analytics/project_status.php');
+            if (res.status !== 'success') return;
+
+            const labels = res.data.map(d => d.status.charAt(0).toUpperCase() + d.status.slice(1));
+            const values = res.data.map(d => parseInt(d.count));
+            const colors = { Planned: '#3b82f6', Ongoing: '#f59e0b', Completed: '#22c55e', Cancelled: '#ef4444' };
+
+            new Chart(document.getElementById('projectBar'), {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Projects',
+                        data: values,
+                        backgroundColor: labels.map(l => colors[l] || '#94a3b8'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                    }
+                }
+            });
+        }
+
+        /**
+         * Loads monthly expense data and renders the line chart.
+         */
+        async function loadExpenseTrend() {
+            const res = await apiGet('/analytics/expense_trend.php');
+            if (res.status !== 'success') return;
+
+            const labels = res.data.map(d => d.month);
+            const values = res.data.map(d => parseFloat(d.total_expense));
+
+            new Chart(document.getElementById('expenseLine'), {
+                type: 'line',
+                data: {
+                    labels,
+                    datasets: [{
+                        label: 'Expenses (₱)',
+                        data: values,
+                        borderColor: '#2563eb',
+                        backgroundColor: 'rgba(37,99,235,0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: '#2563eb'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        /**
+         * Loads and renders the top upvoted and flagged feedback lists.
+         */
+        async function loadTopFeedback() {
+            const res = await apiGet('/analytics/top_feedback.php');
+            if (res.status !== 'success') return;
+
+            // Render most upvoted feedback
+            const upvotedEl = document.getElementById('topUpvotedList');
+            if (res.data.top_upvoted.length === 0) {
+                upvotedEl.innerHTML = '<p style="color:var(--text-secondary)">No feedback yet.</p>';
+            } else {
+                upvotedEl.innerHTML = res.data.top_upvoted.map(f => `
+                    <div class="feedback-card">
+                        <p style="color:var(--text-primary)">${f.comment}</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <span style="color:var(--text-secondary)">${f.citizen_name} · ${f.project_name}</span>
+                            <span class="text-blue-500 font-semibold"><i class="fas fa-thumbs-up mr-1"></i>${f.upvotes}</span>
+                        </div>
+                    </div>`).join('');
+            }
+
+            // Render flagged feedback
+            const flaggedEl = document.getElementById('topFlaggedList');
+            if (res.data.top_flagged.length === 0) {
+                flaggedEl.innerHTML = '<p style="color:var(--text-secondary)">No flagged feedback.</p>';
+            } else {
+                flaggedEl.innerHTML = res.data.top_flagged.map(f => `
+                    <div class="feedback-card flagged">
+                        <p style="color:var(--text-primary)">${f.comment}</p>
+                        <div class="flex items-center justify-between mt-2">
+                            <span style="color:var(--text-secondary)">${f.citizen_name} · ${f.project_name}</span>
+                            <span class="text-red-500 font-semibold"><i class="fas fa-flag mr-1"></i>Flagged</span>
+                        </div>
+                    </div>`).join('');
+            }
+        }
+    </script>
+
+</body>
+</html>

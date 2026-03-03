@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Login</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <!-- Animate.css -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <!-- Toastify -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <!-- TrustGov Theme -->
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4">
+
+    <!-- Theme Toggle (top right) -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="themeToggleBtn" onclick="toggleTheme()"
+            class="w-10 h-10 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center shadow-lg transition">
+        </button>
+    </div>
+
+    <!-- Login Card -->
+    <div class="w-full max-w-md animate__animated animate__fadeInDown">
+
+        <!-- Logo & Title -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-700 mb-4 shadow-lg">
+                <i class="fas fa-landmark text-white text-2xl"></i>
+            </div>
+            <h1 class="text-3xl font-bold" style="color: var(--text-primary)">TrustGov</h1>
+            <p class="text-sm mt-1" style="color: var(--text-secondary)">Barangay Budget Transparency Portal</p>
+        </div>
+
+        <!-- Card -->
+        <div class="card p-8">
+
+            <!-- Tabs -->
+            <div class="flex border-b mb-6" style="border-color: var(--border-color)">
+                <button id="loginTab"
+                    onclick="switchTab('login')"
+                    class="flex-1 pb-3 text-sm border-b-2 border-blue-500 text-blue-600 font-semibold transition">
+                    Login
+                </button>
+                <button id="registerTab"
+                    onclick="switchTab('register')"
+                    class="flex-1 pb-3 text-sm transition" style="color: var(--text-secondary)">
+                    Register
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginForm">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Email</label>
+                        <input id="loginEmail" type="email" placeholder="you@example.com"
+                            class="form-input" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Password</label>
+                        <input id="loginPassword" type="password" placeholder="••••••••"
+                            class="form-input" />
+                    </div>
+                    <button id="loginBtn" onclick="handleLogin()"
+                        class="btn-primary w-full mt-2">
+                        <i class="fas fa-sign-in-alt mr-2"></i> Login
+                    </button>
+                </div>
+
+                <!-- Sample Credentials -->
+                <div class="mt-6 p-3 rounded-lg text-xs space-y-1" style="background:var(--bg-primary); color:var(--text-secondary)">
+                    <p class="font-semibold mb-2" style="color:var(--text-primary)">Demo Credentials</p>
+                    <p><span class="badge-admin mr-2">admin</span> admin@trustgov.ph / password123</p>
+                    <p><span class="badge-official mr-2">official</span> official@trustgov.ph / password123</p>
+                    <p><span class="badge-citizen mr-2">citizen</span> citizen1@trustgov.ph / password123</p>
+                </div>
+            </div>
+
+            <!-- Register Form -->
+            <div id="registerForm" class="hidden">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Full Name</label>
+                        <input id="regName" type="text" placeholder="Juan dela Cruz"
+                            class="form-input" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Email</label>
+                        <input id="regEmail" type="email" placeholder="you@example.com"
+                            class="form-input" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Password</label>
+                        <input id="regPassword" type="password" placeholder="Min. 6 characters"
+                            class="form-input" />
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Role</label>
+                        <select id="regRole" class="form-input">
+                            <option value="">Select role...</option>
+                            <option value="citizen">Citizen</option>
+                            <option value="official">Official</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium mb-1" style="color: var(--text-secondary)">Barangay</label>
+                        <input id="regBarangay" type="text" placeholder="Barangay Poblacion"
+                            class="form-input" />
+                    </div>
+                    <button id="registerBtn" onclick="handleRegister()"
+                        class="btn-primary w-full mt-2">
+                        <i class="fas fa-user-plus mr-2"></i> Register
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <p class="text-center text-xs mt-4" style="color: var(--text-secondary)">
+            &copy; 2025 TrustGov. All rights reserved.
+        </p>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+    <script src="/trustgov/assets/js/auth.js"></script>
+</body>
+</html>

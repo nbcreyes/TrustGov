@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Feedback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body class="min-h-screen">
+
+    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
+                <i class="fas fa-landmark text-white text-sm"></i>
+            </div>
+            <span class="font-bold text-white text-lg">TrustGov</span>
+        </div>
+        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
+            <a href="dashboard.html" class="hover:text-white"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
+            <a href="budgets.html" class="hover:text-white"><i class="fas fa-wallet mr-1"></i>Budgets</a>
+            <a href="projects.html" class="hover:text-white"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
+            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
+            <a href="feedback.html" class="text-white font-semibold"><i class="fas fa-comments mr-1"></i>Feedback</a>
+            <a href="users.html" class="hover:text-white" id="usersNavLink"><i class="fas fa-users mr-1"></i>Users</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
+            <span id="userRoleBadge"></span>
+            <button id="themeToggleBtn" onclick="toggleTheme()"
+                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
+            </button>
+            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
+                <i class="fas fa-sign-out-alt mr-1"></i> Logout
+            </button>
+        </div>
+    </nav>
+
+    <div class="pt-20 px-6 pb-10 max-w-5xl mx-auto">
+        <div class="flex items-center justify-between mb-6 animate__animated animate__fadeInDown">
+            <div>
+                <h2 class="text-2xl font-bold" style="color:var(--text-primary)">Citizen Feedback</h2>
+                <p class="text-sm mt-1" style="color:var(--text-secondary)">Community comments and reports on barangay projects.</p>
+            </div>
+            <div class="flex gap-3 items-center">
+                <select id="projectFilter" onchange="loadFeedback()" class="form-input text-sm" style="width:220px">
+                    <option value="">All Projects</option>
+                </select>
+                <button id="addFeedbackBtn" onclick="openModal()" class="btn-primary hidden">
+                    <i class="fas fa-plus mr-2"></i>Submit Feedback
+                </button>
+            </div>
+        </div>
+
+        <!-- Feedback Cards -->
+        <div id="feedbackFeed" class="space-y-4"></div>
+    </div>
+
+    <!-- Submit Feedback Modal (citizens only) -->
+    <div id="feedbackModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+        <div class="modal-box w-full max-w-lg p-8 animate__animated animate__zoomIn">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-bold" style="color:var(--text-primary)">Submit Feedback</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Project</label>
+                    <select id="feedbackProjectId" class="form-input"></select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Your Comment</label>
+                    <textarea id="feedbackComment" class="form-input" rows="4" placeholder="Share your feedback about this project..."></textarea>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button onclick="submitFeedback()" class="btn-primary flex-1"><i class="fas fa-paper-plane mr-2"></i>Submit</button>
+                    <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/trustgov/assets/js/theme.js"></script>
+    <script src="/trustgov/assets/js/api.js"></script>
+    <script>
+        let currentUser;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            currentUser = requireAuth();
+            renderNavUser(currentUser);
+            if (currentUser.role !== 'admin') document.getElementById('usersNavLink').classList.add('hidden');
+            if (currentUser.role === 'citizen') document.getElementById('addFeedbackBtn').classList.remove('hidden');
+            await loadProjectFilter();
+            await loadFeedback();
+        });
+
+        async function loadProjectFilter() {
+            const res = await apiGet('/projects/read.php');
+            if (res.status !== 'success') return;
+            const filterEl = document.getElementById('projectFilter');
+            const modalEl  = document.getElementById('feedbackProjectId');
+            res.data.forEach(p => {
+                filterEl.innerHTML += `<option value="${p.id}">${p.project_name}</option>`;
+                modalEl.innerHTML  += `<option value="${p.id}">${p.project_name}</option>`;
+            });
+        }
+
+        async function loadFeedback() {
+            const projectId = document.getElementById('projectFilter').value;
+            const endpoint  = projectId ? `/feedback/read.php?project_id=${projectId}` : '/feedback/read.php';
+            const res = await apiGet(endpoint);
+
+            const feed = document.getElementById('feedbackFeed');
+            if (res.status !== 'success' || res.data.length === 0) {
+                feed.innerHTML = `<div class="card p-8 text-center" style="color:var(--text-secondary)"><i class="fas fa-comments text-4xl mb-3 opacity-30"></i><p>No feedback found.</p></div>`;
+                return;
+            }
+
+            const statusColors = { pending: '#94a3b8', reviewed: '#f59e0b', resolved: '#22c55e' };
+
+            feed.innerHTML = res.data.map(f => `
+                <div class="feedback-card animate__animated animate__fadeInUp ${f.flag_suspicious == 1 ? 'flagged' : ''}">
+                    <div class="flex items-start justify-between gap-4">
+                        <div class="flex-1">
+                            <p class="font-medium text-sm mb-1" style="color:var(--text-primary)">${f.comment}</p>
+                            <p class="text-xs" style="color:var(--text-secondary)">
+                                <i class="fas fa-user mr-1"></i>${f.citizen_name} &nbsp;·&nbsp;
+                                <i class="fas fa-project-diagram mr-1"></i>${f.project_name} &nbsp;·&nbsp;
+                                <i class="fas fa-clock mr-1"></i>${f.created_at.slice(0,10)}
+                            </p>
+                        </div>
+                        <span class="text-xs font-semibold px-2 py-1 rounded-full" style="background:${statusColors[f.status]}20;color:${statusColors[f.status]}">${f.status}</span>
+                    </div>
+
+                    <div class="flex items-center gap-3 mt-4 flex-wrap">
+                        <!-- Upvote Button -->
+                        <button onclick="upvoteFeedback(${f.id})"
+                            class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition"
+                            style="background:var(--bg-primary);color:var(--text-secondary)">
+                            <i class="fas fa-thumbs-up text-blue-500"></i>
+                            <span>${f.upvotes}</span>
+                        </button>
+
+                        <!-- Flag Button -->
+                        ${f.flag_suspicious == 0 ? `
+                        <button onclick="flagFeedback(${f.id})"
+                            class="flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition"
+                            style="background:var(--bg-primary);color:var(--text-secondary)">
+                            <i class="fas fa-flag text-red-400"></i> Flag
+                        </button>` : `
+                        <span class="text-xs text-red-500 font-semibold"><i class="fas fa-flag mr-1"></i>Flagged</span>`}
+
+                        <!-- Status Update (officials and admins only) -->
+                        ${['official','admin'].includes(currentUser.role) ? `
+                        <select onchange="updateStatus(${f.id}, this.value)"
+                            class="text-xs rounded-lg px-2 py-1.5 ml-auto"
+                            style="background:var(--bg-primary);color:var(--text-primary);border:1px solid var(--border-color)">
+                            <option value="pending"  ${f.status==='pending'  ? 'selected':''}>Pending</option>
+                            <option value="reviewed" ${f.status==='reviewed' ? 'selected':''}>Reviewed</option>
+                            <option value="resolved" ${f.status==='resolved' ? 'selected':''}>Resolved</option>
+                        </select>` : ''}
+
+                        <!-- Delete (admin only) -->
+                        ${currentUser.role === 'admin' ? `
+                        <button onclick="deleteFeedback(${f.id})"
+                            class="text-xs text-red-500 hover:text-red-700 ml-2">
+                            <i class="fas fa-trash"></i>
+                        </button>` : ''}
+                    </div>
+                </div>`).join('');
+        }
+
+        function openModal() { document.getElementById('feedbackModal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('feedbackModal').classList.add('hidden'); }
+
+        async function submitFeedback() {
+            const project_id = document.getElementById('feedbackProjectId').value;
+            const comment    = document.getElementById('feedbackComment').value.trim();
+            if (!project_id || !comment) { toastError('Please select a project and write a comment.'); return; }
+            const res = await apiPost('/feedback/create.php', { project_id, comment });
+            if (res.status === 'success') { toastSuccess(res.message); closeModal(); await loadFeedback(); }
+            else toastError(res.message);
+        }
+
+        async function upvoteFeedback(id) {
+            const res = await apiPut('/feedback/update.php', { id, action: 'upvote' });
+            if (res.status === 'success') { await loadFeedback(); }
+            else toastError(res.message);
+        }
+
+        async function flagFeedback(id) {
+            const res = await apiPut('/feedback/update.php', { id, action: 'flag' });
+            if (res.status === 'success') { toastSuccess('Feedback flagged.'); await loadFeedback(); }
+            else toastError(res.message);
+        }
+
+        async function updateStatus(id, status) {
+            const res = await apiPut('/feedback/update.php', { id, action: 'status_update', status });
+            if (res.status === 'success') { toastSuccess('Status updated.'); await loadFeedback(); }
+            else toastError(res.message);
+        }
+
+        async function deleteFeedback(id) {
+            const result = await Swal.fire({ title: 'Delete Feedback?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            if (!result.isConfirmed) return;
+            const res = await apiDelete('/feedback/delete.php', { id });
+            if (res.status === 'success') { toastSuccess(res.message); await loadFeedback(); }
+            else toastError(res.message);
+        }
+    </script>
+</body>
+</html>
