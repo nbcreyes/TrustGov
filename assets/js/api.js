@@ -1,167 +1,176 @@
-// Base URL for all API calls — adjust if hosted elsewhere
 const API_BASE = window.location.origin + '/trustgov/api';
 
-/**
- * Sends a GET request to the given endpoint.
- * @param {string} endpoint - API path e.g. '/budgets/read.php'
- * @returns {Promise<object>} Parsed JSON response
- */
+/** GET request */
 async function apiGet(endpoint) {
     try {
-        const response = await fetch(API_BASE + endpoint, {
+        const res = await fetch(API_BASE + endpoint, {
             method: 'GET',
             credentials: 'include'
         });
-        return await response.json();
-    } catch (error) {
-        console.error('GET error:', error);
-        return { status: 'error', message: 'Network error.', data: null };
+        return await res.json();
+    } catch (err) {
+        console.error('GET error:', err);
+        return { status: 'error', message: err.message, data: [] };
     }
 }
 
-/**
- * Sends a POST request with a JSON body to the given endpoint.
- * @param {string} endpoint - API path e.g. '/users/login.php'
- * @param {object} body - Data to send as JSON
- * @returns {Promise<object>} Parsed JSON response
- */
+/** POST request */
 async function apiPost(endpoint, body) {
     try {
-        const response = await fetch(API_BASE + endpoint, {
+        const res = await fetch(API_BASE + endpoint, {
             method: 'POST',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        return await response.json();
-    } catch (error) {
-        console.error('POST error:', error);
-        return { status: 'error', message: 'Network error.', data: null };
+        return await res.json();
+    } catch (err) {
+        console.error('POST error:', err);
+        return { status: 'error', message: err.message };
     }
 }
 
-/**
- * Sends a PUT request with a JSON body to the given endpoint.
- * @param {string} endpoint - API path e.g. '/budgets/update.php'
- * @param {object} body - Data to send as JSON
- * @returns {Promise<object>} Parsed JSON response
- */
+/** PUT request */
 async function apiPut(endpoint, body) {
     try {
-        const response = await fetch(API_BASE + endpoint, {
+        const res = await fetch(API_BASE + endpoint, {
             method: 'PUT',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        return await response.json();
-    } catch (error) {
-        console.error('PUT error:', error);
-        return { status: 'error', message: 'Network error.', data: null };
+        return await res.json();
+    } catch (err) {
+        console.error('PUT error:', err);
+        return { status: 'error', message: err.message };
     }
 }
 
-/**
- * Sends a DELETE request with a JSON body to the given endpoint.
- * @param {string} endpoint - API path e.g. '/budgets/delete.php'
- * @param {object} body - Data to send as JSON
- * @returns {Promise<object>} Parsed JSON response
- */
+/** DELETE request */
 async function apiDelete(endpoint, body) {
     try {
-        const response = await fetch(API_BASE + endpoint, {
+        const res = await fetch(API_BASE + endpoint, {
             method: 'DELETE',
             credentials: 'include',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body)
         });
-        return await response.json();
-    } catch (error) {
-        console.error('DELETE error:', error);
-        return { status: 'error', message: 'Network error.', data: null };
+        return await res.json();
+    } catch (err) {
+        console.error('DELETE error:', err);
+        return { status: 'error', message: err.message };
     }
 }
 
-/**
- * Shows a Toastify success notification.
- * @param {string} message - Message to display
- */
+/* =============================================================
+   TOAST NOTIFICATIONS
+   ============================================================= */
+
+/** Shows a green success toast */
 function toastSuccess(message) {
     Toastify({
         text: message,
         duration: 3000,
         gravity: 'top',
         position: 'right',
-        style: { background: '#22c55e', borderRadius: '8px', fontWeight: '600' }
+        style: {
+            background: 'linear-gradient(135deg, #16a34a, #15803d)',
+            borderRadius: '0.5rem',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontSize: '0.875rem',
+            padding: '0.75rem 1.25rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
     }).showToast();
 }
 
-/**
- * Shows a Toastify error notification.
- * @param {string} message - Message to display
- */
+/** Shows a red error toast */
 function toastError(message) {
     Toastify({
         text: message,
-        duration: 3000,
+        duration: 4000,
         gravity: 'top',
         position: 'right',
-        style: { background: '#ef4444', borderRadius: '8px', fontWeight: '600' }
+        style: {
+            background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
+            borderRadius: '0.5rem',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+            fontSize: '0.875rem',
+            padding: '0.75rem 1.25rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        }
     }).showToast();
 }
 
-/**
- * Returns the currently logged-in user from localStorage.
- * @returns {object|null} User object or null if not logged in
- */
+/* =============================================================
+   AUTH HELPERS
+   ============================================================= */
+
+/** Returns the current user object from localStorage */
 function getUser() {
-    const user = localStorage.getItem('trustgov_user');
-    return user ? JSON.parse(user) : null;
+    const raw = localStorage.getItem('trustgov_user');
+    return raw ? JSON.parse(raw) : null;
 }
 
-/**
- * Saves the logged-in user object to localStorage.
- * @param {object} user - User data returned from login API
- */
+/** Saves user object to localStorage */
 function saveUser(user) {
     localStorage.setItem('trustgov_user', JSON.stringify(user));
 }
 
-/**
- * Clears the user session from localStorage and redirects to login.
- */
+/** Logs out the user and redirects to login */
 function logout() {
     localStorage.removeItem('trustgov_user');
-    window.location.href = '/trustgov/login.html';
+    apiGet('/users/logout.php').finally(() => {
+        window.location.href = '/trustgov/login.html';
+    });
 }
 
 /**
- * Redirects to login if no user session is found.
- * Call this at the top of every protected page.
+ * Requires the user to be logged in.
+ * Redirects to login if not authenticated.
+ * Returns the user object if authenticated.
  */
 function requireAuth() {
     const user = getUser();
     if (!user) {
         window.location.href = '/trustgov/login.html';
+        return null;
     }
     return user;
 }
 
 /**
- * Renders the navbar user role badge and logout button.
- * Call this on every protected page after requireAuth().
- * @param {object} user - The logged-in user object
+ * Renders the sidebar user info, avatar, role badge,
+ * and shows/hides admin-only nav links.
  */
 function renderNavUser(user) {
-    const roleEl  = document.getElementById('userRoleBadge');
-    const nameEl  = document.getElementById('userNameDisplay');
-
+    const nameEl = document.getElementById('userNameDisplay');
+    const roleEl = document.getElementById('userRoleBadge');
+    if (nameEl) nameEl.textContent = user.full_name;
     if (roleEl) {
-        roleEl.className = `badge-${user.role}`;
-        roleEl.textContent = user.role.toUpperCase();
+        roleEl.innerHTML = `<span class="badge-${user.role}">${user.role.toUpperCase()}</span>`;
     }
+}
 
-    if (nameEl) {
-        nameEl.textContent = user.full_name;
+/**
+ * Renders the sidebar footer with user name, role, barangay,
+ * and first-letter avatar. Also shows admin section links.
+ */
+function renderSidebar(user) {
+    const nameEl   = document.getElementById('sidebarUserName');
+    const roleEl   = document.getElementById('sidebarUserRole');
+    const avatarEl = document.getElementById('sidebarAvatar');
+
+    if (nameEl)   nameEl.textContent   = user.full_name;
+    if (roleEl)   roleEl.textContent   = user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' · ' + user.barangay;
+    if (avatarEl) avatarEl.textContent = user.full_name.charAt(0).toUpperCase();
+
+    if (user.role === 'admin') {
+        const adminSection = document.getElementById('adminSection');
+        const usersLink    = document.getElementById('usersNavLink');
+        const auditLink    = document.getElementById('auditNavLink');
+        if (adminSection) adminSection.style.display = 'block';
+        if (usersLink)    usersLink.style.display    = 'flex';
+        if (auditLink)    auditLink.style.display    = 'flex';
     }
 }

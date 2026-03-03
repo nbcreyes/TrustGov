@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+            <i class="fas fa-landmark text-white text-sm"></i>
+        </div>
+        <div>
+            <div class="sidebar-logo-text">TrustGov</div>
+            <div class="sidebar-logo-sub">Budget Transparency Portal</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Main Menu</div>
+        <a href="dashboard.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-chart-pie"></i></span>Dashboard
+        </a>
+        <a href="budgets.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-wallet"></i></span>Budgets
+        </a>
+        <a href="projects.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-project-diagram"></i></span>Projects
+        </a>
+        <a href="expenses.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-receipt"></i></span>Expenses
+        </a>
+        <a href="feedback.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-comments"></i></span>Feedback
+        </a>
+        <div class="sidebar-section-label" id="adminSection" style="display:none">Admin</div>
+        <a href="users.html" class="sidebar-link" id="usersNavLink" style="display:none">
+            <span class="link-icon"><i class="fas fa-users"></i></span>Users
+        </a>
+        <a href="audit.html" class="sidebar-link" id="auditNavLink" style="display:none">
+            <span class="link-icon"><i class="fas fa-clipboard-list"></i></span>Audit Log
+        </a>
+        <div class="sidebar-section-label">Account</div>
+        <a href="profile.html" class="sidebar-link active">
+            <span class="link-icon"><i class="fas fa-user-circle"></i></span>My Profile
+        </a>
+        <a href="announcements.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-bullhorn"></i></span>Announcements
+        </a>
+        <a href="reports.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-file-alt"></i></span>Reports
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-avatar" id="sidebarAvatar">J</div>
+        <div style="flex:1;min-width:0">
+            <div class="sidebar-user-name" id="sidebarUserName">Loading...</div>
+            <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Wrapper -->
+<div class="main-wrapper">
+    <header class="top-header">
+        <div>
+            <h1 class="header-title">My Profile</h1>
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.1rem">
+                Update your personal information and password.
+            </p>
+        </div>
+        <div class="header-actions">
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle">
+                <i class="fas fa-moon" style="color:var(--text-secondary)"></i>
+            </button>
+            <button onclick="logout()" class="btn-danger" style="padding:0.4rem 1rem;font-size:0.8rem">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="page-content">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+            <!-- Avatar Card -->
+            <div class="card p-8 flex flex-col items-center text-center animate__animated animate__fadeInLeft">
+                <div id="profileAvatar"
+                    style="width:6rem;height:6rem;border-radius:50%;
+                    background:linear-gradient(135deg,#3b82f6,#7c3aed);
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:1.25rem;
+                    box-shadow:0 8px 24px rgba(59,130,246,0.3)">
+                    J
+                </div>
+                <h2 id="profileName" class="text-xl font-bold mb-1" style="color:var(--text-primary)">Loading...</h2>
+                <p id="profileEmail" class="text-sm mb-3" style="color:var(--text-secondary)">—</p>
+                <span id="profileRoleBadge" class="mb-2"></span>
+                <p id="profileBarangay" class="text-sm mt-2" style="color:var(--text-secondary)">
+                    <i class="fas fa-map-marker-alt mr-1" style="color:var(--accent)"></i>—
+                </p>
+                <div class="mt-6 w-full p-4 rounded-xl text-left" style="background:var(--bg-primary)">
+                    <p class="text-xs font-semibold mb-2" style="color:var(--text-secondary)">ACCOUNT INFO</p>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span style="color:var(--text-secondary)">Member since</span>
+                        <span id="profileJoined" style="color:var(--text-primary);font-weight:600">—</span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span style="color:var(--text-secondary)">Role</span>
+                        <span id="profileRoleText" style="color:var(--text-primary);font-weight:600;text-transform:capitalize">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="lg:col-span-2 space-y-5 animate__animated animate__fadeInRight">
+
+                <!-- Personal Info Card -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-base mb-5" style="color:var(--text-primary)">
+                        <i class="fas fa-user mr-2" style="color:var(--accent)"></i>Personal Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Full Name</label>
+                            <input id="editName" type="text" class="form-input" placeholder="Juan dela Cruz"/>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Email Address</label>
+                            <input id="editEmail" type="email" class="form-input" placeholder="you@example.com"/>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Barangay</label>
+                            <select id="editBarangay" class="form-input">
+                                <option value="Barangay Poblacion">Barangay Poblacion</option>
+                                <option value="Barangay Bagong Silang">Barangay Bagong Silang</option>
+                                <option value="Barangay Sta. Cruz">Barangay Sta. Cruz</option>
+                                <option value="Barangay San Isidro">Barangay San Isidro</option>
+                                <option value="Barangay Maligaya">Barangay Maligaya</option>
+                                <option value="Barangay Masagana">Barangay Masagana</option>
+                                <option value="Barangay Pag-asa">Barangay Pag-asa</option>
+                                <option value="Barangay Rizal">Barangay Rizal</option>
+                                <option value="Barangay Laging Handa">Barangay Laging Handa</option>
+                                <option value="Barangay Mabuhay">Barangay Mabuhay</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button onclick="saveProfile()" class="btn-primary mt-5">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+
+                <!-- Change Password Card -->
+                <div class="card p-6">
+                    <h3 class="font-bold text-base mb-5" style="color:var(--text-primary)">
+                        <i class="fas fa-lock mr-2" style="color:var(--accent)"></i>Change Password
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Current Password</label>
+                            <input id="currentPassword" type="password" class="form-input" placeholder="Enter current password"/>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">New Password</label>
+                                <input id="newPassword" type="password" class="form-input" placeholder="Min. 6 characters"/>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Confirm New Password</label>
+                                <input id="confirmPassword" type="password" class="form-input" placeholder="Repeat new password"/>
+                            </div>
+                        </div>
+                    </div>
+                    <button onclick="savePassword()" class="btn-primary mt-5">
+                        <i class="fas fa-key"></i> Update Password
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="/trustgov/assets/js/theme.js"></script>
+<script src="/trustgov/assets/js/api.js"></script>
+<script>
+    let currentUser;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        currentUser = requireAuth();
+        renderSidebar(currentUser);
+        populateProfile(currentUser);
+    });
+
+    /** Populates the profile page with current user data */
+    function populateProfile(user) {
+        document.getElementById('profileAvatar').textContent    = user.full_name.charAt(0).toUpperCase();
+        document.getElementById('profileName').textContent      = user.full_name;
+        document.getElementById('profileEmail').textContent     = user.email;
+        document.getElementById('profileBarangay').innerHTML    = `<i class="fas fa-map-marker-alt mr-1" style="color:var(--accent)"></i>${user.barangay}`;
+        document.getElementById('profileRoleText').textContent  = user.role;
+        document.getElementById('profileJoined').textContent    = user.created_at ? user.created_at.slice(0,10) : '—';
+        document.getElementById('profileRoleBadge').innerHTML   = `<span class="badge-${user.role}">${user.role.toUpperCase()}</span>`;
+        document.getElementById('editName').value               = user.full_name;
+        document.getElementById('editEmail').value              = user.email;
+        document.getElementById('editBarangay').value           = user.barangay;
+    }
+
+    /** Saves profile changes */
+    async function saveProfile() {
+        const full_name = document.getElementById('editName').value.trim();
+        const email     = document.getElementById('editEmail').value.trim();
+        const barangay  = document.getElementById('editBarangay').value;
+
+        if (!full_name || !email || !barangay) {
+            toastError('Name, email, and barangay are required.'); return;
+        }
+
+        const res = await apiPut('/users/update_profile.php', { full_name, email, barangay });
+
+        if (res.status === 'success') {
+            // Update localStorage with new user data
+            const updated = { ...currentUser, full_name, email, barangay };
+            saveUser(updated);
+            currentUser = updated;
+            populateProfile(updated);
+            renderSidebar(updated);
+            toastSuccess('Profile updated successfully.');
+        } else {
+            toastError(res.message);
+        }
+    }
+
+    /** Saves new password */
+    async function savePassword() {
+        const current_password = document.getElementById('currentPassword').value;
+        const new_password     = document.getElementById('newPassword').value;
+        const confirm_password = document.getElementById('confirmPassword').value;
+
+        if (!current_password || !new_password || !confirm_password) {
+            toastError('Please fill in all password fields.'); return;
+        }
+
+        if (new_password !== confirm_password) {
+            toastError('New passwords do not match.'); return;
+        }
+
+        if (new_password.length < 6) {
+            toastError('New password must be at least 6 characters.'); return;
+        }
+
+        const res = await apiPut('/users/update_profile.php', {
+            full_name: currentUser.full_name,
+            email:     currentUser.email,
+            barangay:  currentUser.barangay,
+            current_password,
+            new_password
+        });
+
+        if (res.status === 'success') {
+            toastSuccess('Password updated successfully.');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value     = '';
+            document.getElementById('confirmPassword').value = '';
+        } else {
+            toastError(res.message);
+        }
+    }
+</script>
+</body>
+</html>

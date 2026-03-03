@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>TrustGov — Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+            <i class="fas fa-landmark text-white text-sm"></i>
+        </div>
+        <div>
+            <div class="sidebar-logo-text">TrustGov</div>
+            <div class="sidebar-logo-sub">Budget Transparency Portal</div>
+        </div>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Main Menu</div>
+        <a href="dashboard.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-chart-pie"></i></span>Dashboard
+        </a>
+        <a href="budgets.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-wallet"></i></span>Budgets
+        </a>
+        <a href="projects.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-project-diagram"></i></span>Projects
+        </a>
+        <a href="expenses.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-receipt"></i></span>Expenses
+        </a>
+        <a href="feedback.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-comments"></i></span>Feedback
+        </a>
+        <div class="sidebar-section-label" id="adminSection" style="display:none">Admin</div>
+        <a href="users.html" class="sidebar-link" id="usersNavLink" style="display:none">
+            <span class="link-icon"><i class="fas fa-users"></i></span>Users
+        </a>
+        <a href="audit.html" class="sidebar-link" id="auditNavLink" style="display:none">
+            <span class="link-icon"><i class="fas fa-clipboard-list"></i></span>Audit Log
+        </a>
+        <div class="sidebar-section-label">Account</div>
+        <a href="profile.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-user-circle"></i></span>My Profile
+        </a>
+        <a href="announcements.html" class="sidebar-link">
+            <span class="link-icon"><i class="fas fa-bullhorn"></i></span>Announcements
+        </a>
+        <a href="reports.html" class="sidebar-link active">
+            <span class="link-icon"><i class="fas fa-file-alt"></i></span>Reports
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <div class="sidebar-avatar" id="sidebarAvatar">J</div>
+        <div style="flex:1;min-width:0">
+            <div class="sidebar-user-name" id="sidebarUserName">Loading...</div>
+            <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+        </div>
+    </div>
+</aside>
+
+<!-- Main Wrapper -->
+<div class="main-wrapper">
+    <header class="top-header">
+        <div>
+            <h1 class="header-title">Barangay Report</h1>
+            <p style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.1rem">
+                Auto-generated summary report for your barangay.
+            </p>
+        </div>
+        <div class="header-actions">
+            <button onclick="printReport()" class="btn-primary" style="padding:0.4rem 1rem;font-size:0.8rem">
+                <i class="fas fa-print"></i> Export / Print
+            </button>
+            <button id="themeToggleBtn" onclick="toggleTheme()" class="theme-toggle">
+                <i class="fas fa-moon" style="color:var(--text-secondary)"></i>
+            </button>
+            <button onclick="logout()" class="btn-danger" style="padding:0.4rem 1rem;font-size:0.8rem">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </header>
+
+    <div class="page-content" id="reportContent">
+
+        <!-- Report Header -->
+        <div class="card p-6 mb-6 animate__animated animate__fadeInDown" id="reportHeader">
+            <div class="flex items-center justify-between flex-wrap gap-4">
+                <div class="flex items-center gap-4">
+                    <div style="width:3.5rem;height:3.5rem;border-radius:0.875rem;
+                        background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                        display:flex;align-items:center;justify-content:center;
+                        box-shadow:0 4px 12px rgba(37,99,235,0.3)">
+                        <i class="fas fa-landmark text-white text-xl"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold" style="color:var(--text-primary)" id="reportBarangayName">—</h2>
+                        <p style="color:var(--text-secondary);font-size:0.85rem">Budget Transparency Report · Fiscal Year 2026</p>
+                    </div>
+                </div>
+                <div style="text-align:right">
+                    <p style="font-size:0.8rem;color:var(--text-secondary)">Generated by</p>
+                    <p style="font-size:0.875rem;font-weight:600;color:var(--text-primary)" id="reportGeneratedBy">—</p>
+                    <p style="font-size:0.75rem;color:var(--text-secondary)" id="reportGeneratedAt">—</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6" id="reportStats"></div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
+            <div class="card p-5">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-pie mr-2" style="color:#2563eb"></i>Budget by Category
+                </h3>
+                <canvas id="reportDoughnut" height="220"></canvas>
+            </div>
+            <div class="card p-5">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-bar mr-2" style="color:#d97706"></i>Project Status
+                </h3>
+                <canvas id="reportBar" height="220"></canvas>
+            </div>
+            <div class="card p-5">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-chart-line mr-2" style="color:#16a34a"></i>Monthly Expenses
+                </h3>
+                <canvas id="reportLine" height="220"></canvas>
+            </div>
+        </div>
+
+        <!-- Budget Summary Table -->
+        <div class="card p-6 mb-6">
+            <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                <i class="fas fa-wallet mr-2" style="color:#2563eb"></i>Budget Summary by Category
+            </h3>
+            <table class="w-full text-sm" id="budgetSummaryTable">
+                <thead>
+                    <tr style="background:var(--bg-primary)">
+                        <th style="padding:0.75rem 1rem;text-align:left;font-size:0.75rem;font-weight:700;
+                            text-transform:uppercase;color:var(--text-secondary);border-bottom:2px solid var(--border-color)">Category</th>
+                        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:700;
+                            text-transform:uppercase;color:var(--text-secondary);border-bottom:2px solid var(--border-color)">Budgets</th>
+                        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:700;
+                            text-transform:uppercase;color:var(--text-secondary);border-bottom:2px solid var(--border-color)">Allocated</th>
+                        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:700;
+                            text-transform:uppercase;color:var(--text-secondary);border-bottom:2px solid var(--border-color)">Spent</th>
+                        <th style="padding:0.75rem 1rem;text-align:right;font-size:0.75rem;font-weight:700;
+                            text-transform:uppercase;color:var(--text-secondary);border-bottom:2px solid var(--border-color)">Utilization</th>
+                    </tr>
+                </thead>
+                <tbody id="budgetSummaryBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Top Expenses + Feedback Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-6">
+
+            <!-- Top Expenses -->
+            <div class="card p-6">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-receipt mr-2" style="color:#16a34a"></i>Top 5 Largest Expenses
+                </h3>
+                <div id="topExpensesList" class="space-y-3"></div>
+            </div>
+
+            <!-- Feedback Stats -->
+            <div class="card p-6">
+                <h3 class="font-semibold text-sm mb-4" style="color:var(--text-primary)">
+                    <i class="fas fa-comments mr-2" style="color:#7c3aed"></i>Citizen Feedback Summary
+                </h3>
+                <div id="feedbackStatsList"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="/trustgov/assets/js/theme.js"></script>
+<script src="/trustgov/assets/js/api.js"></script>
+<script>
+    let currentUser;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+        currentUser = requireAuth();
+        renderSidebar(currentUser);
+        await loadReport();
+    });
+
+    /** Formats peso amount */
+    function peso(amount) {
+        return '₱' + parseFloat(amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+    }
+
+    /** Loads and renders the full report */
+    async function loadReport() {
+        const res = await apiGet('/reports/summary.php');
+        if (res.status !== 'success') { toastError('Failed to generate report.'); return; }
+
+        const d = res.data;
+
+        // Report header
+        document.getElementById('reportBarangayName').textContent  = d.barangay;
+        document.getElementById('reportGeneratedBy').textContent   = currentUser.full_name;
+        document.getElementById('reportGeneratedAt').textContent   = 'Generated: ' + d.generated_at;
+
+        // Summary stats
+        const totalAllocated = d.budget_summary.reduce((s,b) => s + parseFloat(b.total_allocated), 0);
+        const totalSpent     = d.budget_summary.reduce((s,b) => s + parseFloat(b.total_spent), 0);
+        const totalProjects  = d.project_status.reduce((s,p) => s + parseInt(p.count), 0);
+        const utilPct        = totalAllocated > 0 ? Math.round((totalSpent / totalAllocated) * 100) : 0;
+
+        document.getElementById('reportStats').innerHTML = `
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#2563eb,#1d4ed8)">
+                    <i class="fas fa-peso-sign"></i>
+                </div>
+                <div>
+                    <div class="stat-label">Total Budget</div>
+                    <div class="stat-value" style="font-size:1.1rem">${peso(totalAllocated)}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#16a34a,#15803d)">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div>
+                    <div class="stat-label">Total Spent</div>
+                    <div class="stat-value" style="font-size:1.1rem">${peso(totalSpent)}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#d97706,#b45309)">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <div>
+                    <div class="stat-label">Total Projects</div>
+                    <div class="stat-value">${totalProjects}</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div>
+                    <div class="stat-label">Budget Utilized</div>
+                    <div class="stat-value">${utilPct}%</div>
+                </div>
+            </div>`;
+
+        // Budget doughnut chart
+        const catColors = ['#2563eb','#16a34a','#d97706','#7c3aed','#0891b2','#dc2626'];
+        new Chart(document.getElementById('reportDoughnut'), {
+            type: 'doughnut',
+            data: {
+                labels: d.budget_summary.map(b => b.category),
+                datasets: [{ data: d.budget_summary.map(b => parseFloat(b.total_allocated)), backgroundColor: catColors, borderWidth: 2, borderColor: 'transparent' }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { font: { size: 11 }, padding: 10 } } }, cutout: '65%' }
+        });
+
+        // Project status bar chart
+        const statusColors = { planned: '#3b82f6', ongoing: '#f59e0b', completed: '#22c55e', cancelled: '#ef4444' };
+        new Chart(document.getElementById('reportBar'), {
+            type: 'bar',
+            data: {
+                labels: d.project_status.map(p => p.status),
+                datasets: [{ data: d.project_status.map(p => parseInt(p.count)), backgroundColor: d.project_status.map(p => statusColors[p.status] || '#94a3b8'), borderRadius: 6, borderSkipped: false }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1, color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
+        });
+
+        // Expense trend line chart
+        new Chart(document.getElementById('reportLine'), {
+            type: 'line',
+            data: {
+                labels: d.expense_trend.map(t => t.month),
+                datasets: [{ label: 'Expenses', data: d.expense_trend.map(t => parseFloat(t.total)), borderColor: '#2563eb', backgroundColor: 'rgba(37,99,235,0.08)', tension: 0.4, fill: true, pointBackgroundColor: '#2563eb', pointRadius: 4 }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { display: false } } } }
+        });
+
+        // Budget summary table
+        const tbody = document.getElementById('budgetSummaryBody');
+        tbody.innerHTML = d.budget_summary.map(b => {
+            const pct      = b.total_allocated > 0 ? Math.round((b.total_spent / b.total_allocated) * 100) : 0;
+            const barColor = pct >= 90 ? '#dc2626' : pct >= 60 ? '#d97706' : '#16a34a';
+            return `
+            <tr style="border-bottom:1px solid var(--border-color)">
+                <td style="padding:0.875rem 1rem;text-transform:capitalize;font-weight:500;color:var(--text-primary)">${b.category}</td>
+                <td style="padding:0.875rem 1rem;text-align:right;color:var(--text-secondary)">${b.budget_count}</td>
+                <td style="padding:0.875rem 1rem;text-align:right;font-weight:600;color:var(--text-primary)">${peso(b.total_allocated)}</td>
+                <td style="padding:0.875rem 1rem;text-align:right;color:#16a34a;font-weight:600">${peso(b.total_spent)}</td>
+                <td style="padding:0.875rem 1rem;text-align:right;min-width:120px">
+                    <div style="background:var(--border-color);border-radius:9999px;height:6px;overflow:hidden;margin-bottom:0.25rem">
+                        <div style="width:${pct}%;background:${barColor};height:100%;border-radius:9999px"></div>
+                    </div>
+                    <span style="font-size:0.75rem;color:var(--text-secondary)">${pct}%</span>
+                </td>
+            </tr>`;
+        }).join('');
+
+        // Top 5 expenses
+        document.getElementById('topExpensesList').innerHTML = d.top_expenses.length === 0
+            ? `<p style="color:var(--text-secondary);font-size:0.85rem">No expenses recorded.</p>`
+            : d.top_expenses.map((e, i) => `
+                <div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0;
+                    border-bottom:1px solid var(--border-color)">
+                    <div style="width:1.75rem;height:1.75rem;border-radius:50%;
+                        background:var(--accent-light);color:var(--accent);
+                        display:flex;align-items:center;justify-content:center;
+                        font-size:0.75rem;font-weight:700;flex-shrink:0">${i+1}</div>
+                    <div style="flex:1;min-width:0">
+                        <p style="font-size:0.85rem;font-weight:500;color:var(--text-primary);
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${e.description}</p>
+                        <p style="font-size:0.75rem;color:var(--text-secondary)">${e.project_name} · ${e.expense_date}</p>
+                    </div>
+                    <span style="font-weight:700;color:var(--accent);font-size:0.875rem;white-space:nowrap">
+                        ${peso(e.amount)}
+                    </span>
+                </div>`).join('');
+
+        // Feedback stats
+        const fb = d.feedback_stats;
+        const fbTotal    = parseInt(fb.total    || 0);
+        const fbResolved = parseInt(fb.resolved || 0);
+        const fbPending  = parseInt(fb.pending  || 0);
+        const fbFlagged  = parseInt(fb.flagged  || 0);
+        const resolvePct = fbTotal > 0 ? Math.round((fbResolved / fbTotal) * 100) : 0;
+
+        document.getElementById('feedbackStatsList').innerHTML = `
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div style="padding:1rem;border-radius:0.75rem;background:var(--bg-primary);text-align:center">
+                    <div style="font-size:1.75rem;font-weight:800;color:var(--text-primary)">${fbTotal}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Total Feedback</div>
+                </div>
+                <div style="padding:1rem;border-radius:0.75rem;background:var(--bg-primary);text-align:center">
+                    <div style="font-size:1.75rem;font-weight:800;color:#16a34a">${fbResolved}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Resolved</div>
+                </div>
+                <div style="padding:1rem;border-radius:0.75rem;background:var(--bg-primary);text-align:center">
+                    <div style="font-size:1.75rem;font-weight:800;color:#d97706">${fbPending}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Pending</div>
+                </div>
+                <div style="padding:1rem;border-radius:0.75rem;background:var(--bg-primary);text-align:center">
+                    <div style="font-size:1.75rem;font-weight:800;color:#dc2626">${fbFlagged}</div>
+                    <div style="font-size:0.75rem;color:var(--text-secondary)">Flagged</div>
+                </div>
+            </div>
+            <div>
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.375rem">
+                    <span style="color:var(--text-secondary)">Resolution Rate</span>
+                    <span style="font-weight:700;color:#16a34a">${resolvePct}%</span>
+                </div>
+                <div style="background:var(--border-color);border-radius:9999px;height:8px;overflow:hidden">
+                    <div style="width:${resolvePct}%;background:#16a34a;height:100%;border-radius:9999px;transition:width 0.5s ease"></div>
+                </div>
+            </div>`;
+    }
+
+    /** Triggers browser print for PDF export */
+    function printReport() {
+        window.print();
+    }
+</script>
+</body>
+</html>

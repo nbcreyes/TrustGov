@@ -1,99 +1,226 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TrustGov — Users</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"/>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
-    <link rel="stylesheet" href="/trustgov/assets/css/theme.css"/>
-</head>
-<body class="min-h-screen">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"
+    />
+    <link rel="stylesheet" href="/trustgov/assets/css/theme.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <i class="fas fa-landmark text-white text-sm"></i>
+        </div>
+        <div>
+          <div class="sidebar-logo-text">TrustGov</div>
+          <div class="sidebar-logo-sub">Budget Transparency Portal</div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">Main Menu</div>
+        <a href="dashboard.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-chart-pie"></i></span
+          >Dashboard</a
+        >
+        <a href="budgets.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-wallet"></i></span
+          >Budgets</a
+        >
+        <a href="projects.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-project-diagram"></i></span
+          >Projects</a
+        >
+        <a href="expenses.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-receipt"></i></span
+          >Expenses</a
+        >
+        <a href="feedback.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-comments"></i></span
+          >Feedback</a
+        >
+        <div class="sidebar-section-label">Admin</div>
+        <a href="users.html" class="sidebar-link active"
+          ><span class="link-icon"><i class="fas fa-users"></i></span>Users</a
+        >
+        <a href="audit.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-clipboard-list"></i></span
+          >Audit Log</a
+        >
+        <div class="sidebar-section-label">Account</div>
+        <a href="profile.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-user-circle"></i></span>My
+          Profile</a
+        >
+        <a href="announcements.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-bullhorn"></i></span
+          >Announcements</a
+        >
+        <a href="reports.html" class="sidebar-link"
+          ><span class="link-icon"><i class="fas fa-file-alt"></i></span
+          >Reports</a
+        >
+      </nav>
+      <div class="sidebar-footer">
+        <div class="sidebar-avatar" id="sidebarAvatar">J</div>
+        <div style="flex: 1; min-width: 0">
+          <div class="sidebar-user-name" id="sidebarUserName">Loading...</div>
+          <div class="sidebar-user-role" id="sidebarUserRole">—</div>
+        </div>
+      </div>
+    </aside>
 
-    <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-            <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
-                <i class="fas fa-landmark text-white text-sm"></i>
-            </div>
-            <span class="font-bold text-white text-lg">TrustGov</span>
+    <div class="main-wrapper">
+      <header class="top-header">
+        <div>
+          <h1 class="header-title">User Management</h1>
+          <p
+            style="
+              font-size: 0.75rem;
+              color: var(--text-secondary);
+              margin-top: 0.1rem;
+            "
+          >
+            Admin-only view of all registered users.
+          </p>
         </div>
-        <div class="hidden md:flex items-center gap-6 text-sm text-blue-100">
-            <a href="dashboard.html" class="hover:text-white"><i class="fas fa-chart-pie mr-1"></i>Dashboard</a>
-            <a href="budgets.html" class="hover:text-white"><i class="fas fa-wallet mr-1"></i>Budgets</a>
-            <a href="projects.html" class="hover:text-white"><i class="fas fa-project-diagram mr-1"></i>Projects</a>
-            <a href="expenses.html" class="hover:text-white"><i class="fas fa-receipt mr-1"></i>Expenses</a>
-            <a href="feedback.html" class="hover:text-white"><i class="fas fa-comments mr-1"></i>Feedback</a>
-            <a href="users.html" class="text-white font-semibold"><i class="fas fa-users mr-1"></i>Users</a>
+        <div class="header-actions">
+          <button
+            onclick="window.print()"
+            class="btn-secondary"
+            style="padding: 0.4rem 1rem; font-size: 0.8rem"
+          >
+            <i class="fas fa-print"></i> Print
+          </button>
+          <button
+            id="themeToggleBtn"
+            onclick="toggleTheme()"
+            class="theme-toggle"
+          >
+            <i class="fas fa-moon" style="color: var(--text-secondary)"></i>
+          </button>
+          <button
+            onclick="logout()"
+            class="btn-danger"
+            style="padding: 0.4rem 1rem; font-size: 0.8rem"
+          >
+            <i class="fas fa-sign-out-alt"></i> Logout
+          </button>
         </div>
-        <div class="flex items-center gap-3">
-            <span id="userNameDisplay" class="text-sm text-blue-100 hidden md:block"></span>
-            <span id="userRoleBadge"></span>
-            <button id="themeToggleBtn" onclick="toggleTheme()"
-                class="w-9 h-9 rounded-full bg-blue-700 hover:bg-blue-600 flex items-center justify-center transition">
-            </button>
-            <button onclick="logout()" class="text-sm bg-red-600 hover:bg-red-500 text-white px-3 py-1.5 rounded-lg transition">
-                <i class="fas fa-sign-out-alt mr-1"></i> Logout
-            </button>
-        </div>
-    </nav>
-
-    <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
-        <div class="mb-6 animate__animated animate__fadeInDown">
-            <h2 class="text-2xl font-bold" style="color:var(--text-primary)">User Management</h2>
-            <p class="text-sm mt-1" style="color:var(--text-secondary)">Admin-only view of all registered users.</p>
-        </div>
-
+      </header>
+      <div class="page-content">
+        <div
+          id="userSummaryCards"
+          class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6"
+        ></div>
         <div class="card p-6 animate__animated animate__fadeInUp">
-            <table id="usersTable" class="w-full text-sm">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Full Name</th>
-                        <th>Email</th>
-                        <th>Role</th>
-                        <th>Barangay</th>
-                        <th>Registered</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="usersTableBody"></tbody>
-            </table>
+          <table id="usersTable" class="w-full text-sm">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Barangay</th>
+                <th>Registered</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
         </div>
+      </div>
     </div>
 
-    <!-- Edit Role Modal -->
-    <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay">
-        <div class="modal-box w-full max-w-md p-8 animate__animated animate__zoomIn">
-            <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-bold" style="color:var(--text-primary)">Edit User Role</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-red-500 text-xl"><i class="fas fa-times"></i></button>
-            </div>
-            <input type="hidden" id="editUserId"/>
-            <input type="hidden" id="editUserName"/>
-            <input type="hidden" id="editUserEmail"/>
-            <input type="hidden" id="editUserBarangay"/>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">User</label>
-                    <p id="editUserDisplay" class="font-semibold" style="color:var(--text-primary)"></p>
-                </div>
-                <div>
-                    <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Role</label>
-                    <select id="editUserRole" class="form-input">
-                        <option value="citizen">Citizen</option>
-                        <option value="official">Official</option>
-                        <option value="admin">Admin</option>
-                    </select>
-                </div>
-                <div class="flex gap-3 pt-2">
-                    <button onclick="saveUserRole()" class="btn-primary flex-1"><i class="fas fa-save mr-2"></i>Save</button>
-                    <button onclick="closeModal()" class="btn-secondary flex-1">Cancel</button>
-                </div>
-            </div>
+    <div
+      id="editModal"
+      class="hidden fixed inset-0 z-50 flex items-center justify-center modal-overlay"
+    >
+      <div
+        class="modal-box w-full max-w-md p-8 animate__animated animate__zoomIn"
+      >
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-bold" style="color: var(--text-primary)">
+            Edit User
+          </h3>
+          <button onclick="closeModal()" class="btn-icon btn-icon-delete">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
+        <input type="hidden" id="editUserId" />
+        <input type="hidden" id="editUserName" />
+        <input type="hidden" id="editUserEmail" />
+        <div class="space-y-4">
+          <div>
+            <label
+              class="block text-sm font-medium mb-1"
+              style="color: var(--text-secondary)"
+              >User</label
+            >
+            <p
+              id="editUserDisplay"
+              class="font-semibold"
+              style="color: var(--text-primary)"
+            ></p>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium mb-1"
+              style="color: var(--text-secondary)"
+              >Barangay</label
+            >
+            <select id="editUserBarangaySelect" class="form-input">
+              <option>Barangay Poblacion</option>
+              <option>Barangay Bagong Silang</option>
+              <option>Barangay Sta. Cruz</option>
+              <option>Barangay San Isidro</option>
+              <option>Barangay Maligaya</option>
+              <option>Barangay Masagana</option>
+              <option>Barangay Pag-asa</option>
+              <option>Barangay Rizal</option>
+              <option>Barangay Laging Handa</option>
+              <option>Barangay Mabuhay</option>
+            </select>
+          </div>
+          <div>
+            <label
+              class="block text-sm font-medium mb-1"
+              style="color: var(--text-secondary)"
+              >Role</label
+            >
+            <select id="editUserRole" class="form-input">
+              <option value="citizen">Citizen</option>
+              <option value="official">Official</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button onclick="saveUserEdit()" class="btn-primary flex-1">
+              <i class="fas fa-save"></i> Save
+            </button>
+            <button onclick="closeModal()" class="btn-secondary flex-1">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
@@ -103,97 +230,125 @@
     <script src="/trustgov/assets/js/theme.js"></script>
     <script src="/trustgov/assets/js/api.js"></script>
     <script>
-        let usersTable;
-        let currentUser;
+      let usersTable, currentUser;
 
-        document.addEventListener('DOMContentLoaded', async () => {
-            currentUser = requireAuth();
-            if (currentUser.role !== 'admin') {
-                window.location.href = 'dashboard.html';
-                return;
-            }
-            renderNavUser(currentUser);
-            await loadUsers();
+      document.addEventListener("DOMContentLoaded", async () => {
+        currentUser = requireAuth();
+        if (currentUser.role !== "admin") {
+          window.location.href = "dashboard.html";
+          return;
+        }
+        renderSidebar(currentUser);
+        await loadUsers();
+      });
+
+      function renderSummaryCards(users) {
+        const admins = users.filter((u) => u.role === "admin").length;
+        const officials = users.filter((u) => u.role === "official").length;
+        const citizens = users.filter((u) => u.role === "citizen").length;
+        document.getElementById("userSummaryCards").innerHTML = `
+            <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#dc2626,#b91c1c)"><i class="fas fa-user-shield"></i></div><div><div class="stat-label">Admins</div><div class="stat-value">${admins}</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#d97706,#b45309)"><i class="fas fa-user-tie"></i></div><div><div class="stat-label">Officials</div><div class="stat-value">${officials}</div></div></div>
+            <div class="stat-card"><div class="stat-icon" style="background:linear-gradient(135deg,#16a34a,#15803d)"><i class="fas fa-user"></i></div><div><div class="stat-label">Citizens</div><div class="stat-value">${citizens}</div></div></div>`;
+      }
+
+      async function loadUsers() {
+        const res = await apiGet("/users/read.php");
+        if (res.status !== "success") {
+          toastError("Failed to load users.");
+          return;
+        }
+        renderSummaryCards(res.data);
+        const tbody = document.getElementById("usersTableBody");
+        tbody.innerHTML = res.data
+          .map(
+            (u) => `
+            <tr>
+                <td>${u.id}</td>
+                <td><div class="flex items-center gap-2">
+                    <div style="width:1.75rem;height:1.75rem;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#7c3aed);display:flex;align-items:center;justify-content:center;color:#fff;font-size:0.7rem;font-weight:700;flex-shrink:0">${u.full_name.charAt(0).toUpperCase()}</div>
+                    <span class="font-medium" style="color:var(--text-primary)">${u.full_name}</span>
+                </div></td>
+                <td style="color:var(--text-secondary)">${u.email}</td>
+                <td><span class="badge-${u.role}">${u.role.toUpperCase()}</span></td>
+                <td>${u.barangay}</td>
+                <td style="color:var(--text-secondary)">${u.created_at.slice(0, 10)}</td>
+                <td>
+                    <div class="flex gap-1 justify-center">
+                        <button onclick="openEditModal(${u.id},'${u.full_name}','${u.email}','${u.role}','${u.barangay}')" class="btn-icon btn-icon-edit"><i class="fas fa-edit"></i></button>
+                        ${u.id != currentUser.id ? `<button onclick="deleteUser(${u.id})" class="btn-icon btn-icon-delete"><i class="fas fa-trash"></i></button>` : ""}
+                    </div>
+                </td>
+            </tr>`,
+          )
+          .join("");
+        if (usersTable) usersTable.destroy();
+        usersTable = $("#usersTable").DataTable({
+          pageLength: 10,
+          columnDefs: [
+            {
+              targets: -1,
+              orderable: false,
+              searchable: false,
+              className: "dt-center",
+            },
+          ],
         });
+      }
 
-        /** Loads all users and initializes DataTable */
-        async function loadUsers() {
-            const res = await apiGet('/users/read.php');
-            if (res.status !== 'success') { toastError('Failed to load users.'); return; }
+      function openEditModal(id, name, email, role, barangay) {
+        document.getElementById("editUserId").value = id;
+        document.getElementById("editUserName").value = name;
+        document.getElementById("editUserEmail").value = email;
+        document.getElementById("editUserDisplay").textContent =
+          `${name} (${email})`;
+        document.getElementById("editUserRole").value = role;
+        document.getElementById("editUserBarangaySelect").value = barangay;
+        document.getElementById("editModal").classList.remove("hidden");
+      }
 
-            const tbody = document.getElementById('usersTableBody');
-            tbody.innerHTML = res.data.map(u => `
-                <tr>
-                    <td>${u.id}</td>
-                    <td>${u.full_name}</td>
-                    <td>${u.email}</td>
-                    <td><span class="badge-${u.role}">${u.role.toUpperCase()}</span></td>
-                    <td>${u.barangay}</td>
-                    <td>${u.created_at.slice(0,10)}</td>
-                    <td>
-                        <div class="flex gap-2 justify-center">
-                            <button onclick="openEditModal(${u.id},'${u.full_name}','${u.email}','${u.role}','${u.barangay}')"
-                                class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-xs"
-                                style="background:var(--bg-primary)">
-                                <i class="fas fa-edit mr-1"></i>Edit
-                            </button>
-                            ${u.id != currentUser.id ? `
-                            <button onclick="deleteUser(${u.id})"
-                                class="text-red-500 hover:text-red-700 px-2 py-1 rounded text-xs"
-                                style="background:var(--bg-primary)">
-                                <i class="fas fa-trash mr-1"></i>Delete
-                            </button>` : ''}
-                        </div>
-                    </td>
-                </tr>`).join('');
+      function closeModal() {
+        document.getElementById("editModal").classList.add("hidden");
+      }
 
-            if (usersTable) { usersTable.destroy(); }
-            usersTable = $('#usersTable').DataTable({
-                pageLength: 10,
-                columnDefs: [
-                    { targets: -1, orderable: false, searchable: false, className: 'dt-center' }
-                ]
-            });
-        }
+      async function saveUserEdit() {
+        const id = document.getElementById("editUserId").value;
+        const full_name = document.getElementById("editUserName").value;
+        const email = document.getElementById("editUserEmail").value;
+        const barangay = document.getElementById(
+          "editUserBarangaySelect",
+        ).value;
+        const role = document.getElementById("editUserRole").value;
+        const res = await apiPut("/users/update.php", {
+          id,
+          full_name,
+          email,
+          barangay,
+          role,
+        });
+        if (res.status === "success") {
+          toastSuccess("User updated successfully.");
+          closeModal();
+          await loadUsers();
+        } else toastError(res.message);
+      }
 
-        function openEditModal(id, name, email, role, barangay) {
-            document.getElementById('editUserId').value       = id;
-            document.getElementById('editUserName').value     = name;
-            document.getElementById('editUserEmail').value    = email;
-            document.getElementById('editUserBarangay').value = barangay;
-            document.getElementById('editUserDisplay').textContent = `${name} (${email})`;
-            document.getElementById('editUserRole').value     = role;
-            document.getElementById('editModal').classList.remove('hidden');
-        }
-
-        function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
-
-        async function saveUserRole() {
-            const id        = document.getElementById('editUserId').value;
-            const full_name = document.getElementById('editUserName').value;
-            const email     = document.getElementById('editUserEmail').value;
-            const barangay  = document.getElementById('editUserBarangay').value;
-            const role      = document.getElementById('editUserRole').value;
-
-            const res = await apiPut('/users/update.php', { id, full_name, email, barangay, role });
-            if (res.status === 'success') { toastSuccess('User role updated.'); closeModal(); await loadUsers(); }
-            else toastError(res.message);
-        }
-
-        async function deleteUser(id) {
-            const result = await Swal.fire({
-                title: 'Delete User?',
-                text: 'This action cannot be undone.',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                confirmButtonText: 'Yes, delete it!'
-            });
-            if (!result.isConfirmed) return;
-            const res = await apiDelete('/users/delete.php', { id });
-            if (res.status === 'success') { toastSuccess(res.message); await loadUsers(); }
-            else toastError(res.message);
-        }
+      async function deleteUser(id) {
+        const result = await Swal.fire({
+          title: "Delete User?",
+          text: "This action cannot be undone.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#dc2626",
+          confirmButtonText: "Yes, delete it!",
+        });
+        if (!result.isConfirmed) return;
+        const res = await apiDelete("/users/delete.php", { id });
+        if (res.status === "success") {
+          toastSuccess(res.message);
+          await loadUsers();
+        } else toastError(res.message);
+      }
     </script>
-</body>
+  </body>
 </html>
