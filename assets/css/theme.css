@@ -257,3 +257,14 @@ table.dataTable tbody tr:hover {
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
 ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* --- Fix: Action buttons always visible in DataTables --- */
+table.dataTable tbody td.dt-center {
+    text-align: center;
+    white-space: nowrap;
+    overflow: visible !important;
+}
+
+table.dataTable tbody td {
+    vertical-align: middle;
+}

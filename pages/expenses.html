@@ -140,17 +140,21 @@
             await loadExpenses();
         });
 
+        /** Loads projects into filter and modal dropdowns */
         async function loadProjectFilter() {
             const res = await apiGet('/projects/read.php');
             if (res.status !== 'success') return;
             const filterEl = document.getElementById('projectFilter');
             const modalEl  = document.getElementById('expenseProjectId');
+            filterEl.innerHTML = '<option value="">All Projects</option>';
+            modalEl.innerHTML  = '<option value="">Select project...</option>';
             res.data.forEach(p => {
                 filterEl.innerHTML += `<option value="${p.id}">${p.project_name}</option>`;
                 modalEl.innerHTML  += `<option value="${p.id}">${p.project_name}</option>`;
             });
         }
 
+        /** Loads expenses, optionally filtered by project */
         async function loadExpenses() {
             const projectId = document.getElementById('projectFilter').value;
             const endpoint  = projectId ? `/expenses/read.php?project_id=${projectId}` : '/expenses/read.php';
@@ -168,51 +172,72 @@
                     <td>${e.receipt_number || '—'}</td>
                     <td>${e.expense_date}</td>
                     <td>${e.logged_by_name}</td>
-                    <td class="flex gap-2">
-                        ${currentUser.role === 'official' ? `<button onclick='editExpense(${JSON.stringify(e)})' class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
-                        ${currentUser.role === 'admin' ? `<button onclick="deleteExpense(${e.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    <td>
+                        <div class="flex gap-2 justify-center">
+                            ${currentUser.role === 'official' ? `
+                            <button onclick='editExpense(${JSON.stringify(e)})'
+                                class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>` : ''}
+                            ${currentUser.role === 'admin' ? `
+                            <button onclick="deleteExpense(${e.id})"
+                                class="text-red-500 hover:text-red-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>` : ''}
+                            ${!['official','admin'].includes(currentUser.role) ? `<span class="text-xs" style="color:var(--text-secondary)">—</span>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('');
 
             if (expensesTable) { expensesTable.destroy(); }
-            expensesTable = $('#expensesTable').DataTable({ pageLength: 10 });
+            expensesTable = $('#expensesTable').DataTable({
+                pageLength: 10,
+                columnDefs: [
+                    { targets: -1, orderable: false, searchable: false, className: 'dt-center' }
+                ]
+            });
         }
 
         function openModal() {
-            document.getElementById('modalTitle').textContent = 'Log Expense';
-            document.getElementById('expenseId').value = '';
+            document.getElementById('modalTitle').textContent   = 'Log Expense';
+            document.getElementById('expenseId').value          = '';
             document.getElementById('expenseDescription').value = '';
-            document.getElementById('expenseAmount').value = '';
-            document.getElementById('expenseDate').value = '';
-            document.getElementById('expenseSupplier').value = '';
-            document.getElementById('expenseReceipt').value = '';
+            document.getElementById('expenseAmount').value      = '';
+            document.getElementById('expenseDate').value        = '';
+            document.getElementById('expenseSupplier').value    = '';
+            document.getElementById('expenseReceipt').value     = '';
             document.getElementById('expenseModal').classList.remove('hidden');
         }
 
         function editExpense(e) {
-            document.getElementById('modalTitle').textContent = 'Edit Expense';
+            document.getElementById('modalTitle').textContent   = 'Edit Expense';
             document.getElementById('expenseId').value          = e.id;
             document.getElementById('expenseProjectId').value   = e.project_id;
             document.getElementById('expenseDescription').value = e.description;
             document.getElementById('expenseAmount').value      = e.amount;
             document.getElementById('expenseDate').value        = e.expense_date;
-            document.getElementById('expenseSupplier').value    = e.supplier;
-            document.getElementById('expenseReceipt').value     = e.receipt_number;
+            document.getElementById('expenseSupplier').value    = e.supplier    || '';
+            document.getElementById('expenseReceipt').value     = e.receipt_number || '';
             document.getElementById('expenseModal').classList.remove('hidden');
         }
 
         function closeModal() { document.getElementById('expenseModal').classList.add('hidden'); }
 
         async function saveExpense() {
-            const id          = document.getElementById('expenseId').value;
-            const project_id  = document.getElementById('expenseProjectId').value;
-            const description = document.getElementById('expenseDescription').value.trim();
-            const amount      = document.getElementById('expenseAmount').value;
-            const expense_date = document.getElementById('expenseDate').value;
-            const supplier    = document.getElementById('expenseSupplier').value.trim();
+            const id             = document.getElementById('expenseId').value;
+            const project_id     = document.getElementById('expenseProjectId').value;
+            const description    = document.getElementById('expenseDescription').value.trim();
+            const amount         = document.getElementById('expenseAmount').value;
+            const expense_date   = document.getElementById('expenseDate').value;
+            const supplier       = document.getElementById('expenseSupplier').value.trim();
             const receipt_number = document.getElementById('expenseReceipt').value.trim();
 
-            if (!project_id || !description || !amount || !expense_date) { toastError('Project, description, amount, and date are required.'); return; }
+            if (!project_id || !description || !amount || !expense_date) {
+                toastError('Project, description, amount, and date are required.');
+                return;
+            }
 
             let res;
             if (id) {
@@ -226,7 +251,14 @@
         }
 
         async function deleteExpense(id) {
-            const result = await Swal.fire({ title: 'Delete Expense?', text: 'This action cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            const result = await Swal.fire({
+                title: 'Delete Expense?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Yes, delete it!'
+            });
             if (!result.isConfirmed) return;
             const res = await apiDelete('/expenses/delete.php', { id });
             if (res.status === 'success') { toastSuccess(res.message); await loadExpenses(); }

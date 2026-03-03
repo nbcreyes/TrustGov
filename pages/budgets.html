@@ -13,7 +13,6 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- Navbar -->
     <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
@@ -42,7 +41,6 @@
         </div>
     </nav>
 
-    <!-- Page Content -->
     <div class="pt-20 px-6 pb-10 max-w-7xl mx-auto">
         <div class="flex items-center justify-between mb-6 animate__animated animate__fadeInDown">
             <div>
@@ -54,7 +52,6 @@
             </button>
         </div>
 
-        <!-- Table Card -->
         <div class="card p-6 animate__animated animate__fadeInUp">
             <table id="budgetsTable" class="w-full text-sm">
                 <thead>
@@ -85,7 +82,19 @@
             <div class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium mb-1" style="color:var(--text-secondary)">Barangay Name</label>
-                    <input id="budgetBarangay" type="text" class="form-input" placeholder="Barangay Poblacion"/>
+                    <select id="budgetBarangay" class="form-input">
+                        <option value="">Select barangay...</option>
+                        <option value="Barangay Poblacion">Barangay Poblacion</option>
+                        <option value="Barangay Bagong Silang">Barangay Bagong Silang</option>
+                        <option value="Barangay Sta. Cruz">Barangay Sta. Cruz</option>
+                        <option value="Barangay San Isidro">Barangay San Isidro</option>
+                        <option value="Barangay Maligaya">Barangay Maligaya</option>
+                        <option value="Barangay Masagana">Barangay Masagana</option>
+                        <option value="Barangay Pag-asa">Barangay Pag-asa</option>
+                        <option value="Barangay Rizal">Barangay Rizal</option>
+                        <option value="Barangay Laging Handa">Barangay Laging Handa</option>
+                        <option value="Barangay Mabuhay">Barangay Mabuhay</option>
+                    </select>
                 </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
@@ -137,7 +146,6 @@
             currentUser = requireAuth();
             renderNavUser(currentUser);
             if (currentUser.role !== 'admin') document.getElementById('usersNavLink').classList.add('hidden');
-            // Show Add Budget button for officials only
             if (currentUser.role === 'official') document.getElementById('addBudgetBtn').classList.remove('hidden');
             await loadBudgets();
         });
@@ -157,14 +165,33 @@
                     <td>₱${parseFloat(b.total_amount).toLocaleString()}</td>
                     <td>${b.posted_by_name}</td>
                     <td>${b.created_at.slice(0,10)}</td>
-                    <td class="flex gap-2">
-                        ${currentUser.role === 'official' ? `<button onclick="editBudget(${b.id},'${b.barangay_name}',${b.fiscal_year},${b.total_amount},'${b.category}','${b.description}')" class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
-                        ${currentUser.role === 'admin' ? `<button onclick="deleteBudget(${b.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    <td>
+                        <div class="flex gap-2 justify-center">
+                            ${currentUser.role === 'official' ? `
+                            <button onclick="editBudget(${b.id},'${b.barangay_name}',${b.fiscal_year},${b.total_amount},'${b.category}','${(b.description||'').replace(/'/g,"\\'")}'')"
+                                class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>` : ''}
+                            ${currentUser.role === 'admin' ? `
+                            <button onclick="deleteBudget(${b.id})"
+                                class="text-red-500 hover:text-red-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>` : ''}
+                            ${!['official','admin'].includes(currentUser.role) ? `<span class="text-xs" style="color:var(--text-secondary)">—</span>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('');
 
             if (budgetsTable) { budgetsTable.destroy(); }
-            budgetsTable = $('#budgetsTable').DataTable({ pageLength: 10, responsive: true });
+            budgetsTable = $('#budgetsTable').DataTable({
+                pageLength: 10,
+                responsive: true,
+                columnDefs: [
+                    { targets: -1, orderable: false, searchable: false, className: 'dt-center' }
+                ]
+            });
         }
 
         /** Opens the add budget modal */
@@ -198,8 +225,8 @@
 
         /** Saves or updates a budget entry */
         async function saveBudget() {
-            const id          = document.getElementById('budgetId').value;
-            const barangay_name = document.getElementById('budgetBarangay').value.trim();
+            const id            = document.getElementById('budgetId').value;
+            const barangay_name = document.getElementById('budgetBarangay').value;
             const fiscal_year   = document.getElementById('budgetYear').value;
             const total_amount  = document.getElementById('budgetAmount').value;
             const category      = document.getElementById('budgetCategory').value;

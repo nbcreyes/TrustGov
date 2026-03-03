@@ -13,7 +13,6 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- Navbar -->
     <nav class="navbar fixed top-0 left-0 right-0 z-50 px-6 py-3 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center">
@@ -148,7 +147,6 @@
     <script>
         let projectsTable;
         let currentUser;
-        let allBudgets = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             currentUser = requireAuth();
@@ -163,12 +161,14 @@
         async function loadBudgetFilter() {
             const res = await apiGet('/budgets/read.php');
             if (res.status !== 'success') return;
-            allBudgets = res.data;
             const filterEl = document.getElementById('budgetFilter');
             const modalEl  = document.getElementById('projectBudgetId');
-            allBudgets.forEach(b => {
-                filterEl.innerHTML += `<option value="${b.id}">${b.barangay_name} — ${b.category} (${b.fiscal_year})</option>`;
-                modalEl.innerHTML  += `<option value="${b.id}">${b.barangay_name} — ${b.category} (${b.fiscal_year})</option>`;
+            filterEl.innerHTML = '<option value="">All Budgets</option>';
+            modalEl.innerHTML  = '<option value="">Select budget...</option>';
+            res.data.forEach(b => {
+                const label = `${b.barangay_name} — ${b.category} (${b.fiscal_year})`;
+                filterEl.innerHTML += `<option value="${b.id}">${label}</option>`;
+                modalEl.innerHTML  += `<option value="${b.id}">${label}</option>`;
             });
         }
 
@@ -179,7 +179,13 @@
             const res = await apiGet(endpoint);
             if (res.status !== 'success') { toastError('Failed to load projects.'); return; }
 
-            const statusBadge = { planned: 'status-planned', ongoing: 'status-ongoing', completed: 'status-completed', cancelled: 'status-cancelled' };
+            const statusBadge = {
+                planned:   'status-planned',
+                ongoing:   'status-ongoing',
+                completed: 'status-completed',
+                cancelled: 'status-cancelled'
+            };
+
             const tbody = document.getElementById('projectsTableBody');
             tbody.innerHTML = res.data.map(p => `
                 <tr>
@@ -190,14 +196,32 @@
                     <td>₱${parseFloat(p.allocated_amount).toLocaleString()}</td>
                     <td>₱${parseFloat(p.spent_amount).toLocaleString()}</td>
                     <td><span class="${statusBadge[p.status]}">${p.status}</span></td>
-                    <td class="flex gap-2">
-                        ${currentUser.role === 'official' ? `<button onclick='editProject(${JSON.stringify(p)})' class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>` : ''}
-                        ${currentUser.role === 'admin' ? `<button onclick="deleteProject(${p.id})" class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    <td>
+                        <div class="flex gap-2 justify-center">
+                            ${currentUser.role === 'official' ? `
+                            <button onclick='editProject(${JSON.stringify(p)})'
+                                class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>` : ''}
+                            ${currentUser.role === 'admin' ? `
+                            <button onclick="deleteProject(${p.id})"
+                                class="text-red-500 hover:text-red-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>` : ''}
+                            ${!['official','admin'].includes(currentUser.role) ? `<span class="text-xs" style="color:var(--text-secondary)">—</span>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('');
 
             if (projectsTable) { projectsTable.destroy(); }
-            projectsTable = $('#projectsTable').DataTable({ pageLength: 10 });
+            projectsTable = $('#projectsTable').DataTable({
+                pageLength: 10,
+                columnDefs: [
+                    { targets: -1, orderable: false, searchable: false, className: 'dt-center' }
+                ]
+            });
         }
 
         function openModal() {
@@ -215,16 +239,16 @@
         }
 
         function editProject(p) {
-            document.getElementById('modalTitle').textContent = 'Edit Project';
+            document.getElementById('modalTitle').textContent   = 'Edit Project';
             document.getElementById('projectId').value          = p.id;
             document.getElementById('projectBudgetId').value    = p.budget_id;
             document.getElementById('projectName').value        = p.project_name;
-            document.getElementById('projectDescription').value = p.description;
-            document.getElementById('projectContractor').value  = p.contractor;
+            document.getElementById('projectDescription').value = p.description || '';
+            document.getElementById('projectContractor').value  = p.contractor  || '';
             document.getElementById('projectAllocated').value   = p.allocated_amount;
             document.getElementById('projectSpent').value       = p.spent_amount;
-            document.getElementById('projectStart').value       = p.start_date;
-            document.getElementById('projectEnd').value         = p.end_date;
+            document.getElementById('projectStart').value       = p.start_date  || '';
+            document.getElementById('projectEnd').value         = p.end_date    || '';
             document.getElementById('projectStatus').value      = p.status;
             document.getElementById('projectModal').classList.remove('hidden');
         }
@@ -243,7 +267,10 @@
             const end_date         = document.getElementById('projectEnd').value;
             const status           = document.getElementById('projectStatus').value;
 
-            if (!budget_id || !project_name || !allocated_amount) { toastError('Budget, project name, and allocated amount are required.'); return; }
+            if (!budget_id || !project_name || !allocated_amount) {
+                toastError('Budget, project name, and allocated amount are required.');
+                return;
+            }
 
             let res;
             if (id) {
@@ -257,7 +284,14 @@
         }
 
         async function deleteProject(id) {
-            const result = await Swal.fire({ title: 'Delete Project?', text: 'All linked expenses will also be deleted.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            const result = await Swal.fire({
+                title: 'Delete Project?',
+                text: 'All linked expenses will also be deleted.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Yes, delete it!'
+            });
             if (!result.isConfirmed) return;
             const res = await apiDelete('/projects/delete.php', { id });
             if (res.status === 'success') { toastSuccess(res.message); await loadProjects(); }

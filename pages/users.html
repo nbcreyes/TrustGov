@@ -108,7 +108,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             currentUser = requireAuth();
-            // Redirect non-admins away from this page
             if (currentUser.role !== 'admin') {
                 window.location.href = 'dashboard.html';
                 return;
@@ -117,6 +116,7 @@
             await loadUsers();
         });
 
+        /** Loads all users and initializes DataTable */
         async function loadUsers() {
             const res = await apiGet('/users/read.php');
             if (res.status !== 'success') { toastError('Failed to load users.'); return; }
@@ -130,37 +130,50 @@
                     <td><span class="badge-${u.role}">${u.role.toUpperCase()}</span></td>
                     <td>${u.barangay}</td>
                     <td>${u.created_at.slice(0,10)}</td>
-                    <td class="flex gap-2">
-                        <button onclick="openEditModal(${u.id},'${u.full_name}','${u.email}','${u.role}','${u.barangay}')"
-                            class="text-blue-500 hover:text-blue-700"><i class="fas fa-edit"></i></button>
-                        ${u.id !== currentUser.id ? `
-                        <button onclick="deleteUser(${u.id})"
-                            class="text-red-500 hover:text-red-700"><i class="fas fa-trash"></i></button>` : ''}
+                    <td>
+                        <div class="flex gap-2 justify-center">
+                            <button onclick="openEditModal(${u.id},'${u.full_name}','${u.email}','${u.role}','${u.barangay}')"
+                                class="text-blue-500 hover:text-blue-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-edit mr-1"></i>Edit
+                            </button>
+                            ${u.id != currentUser.id ? `
+                            <button onclick="deleteUser(${u.id})"
+                                class="text-red-500 hover:text-red-700 px-2 py-1 rounded text-xs"
+                                style="background:var(--bg-primary)">
+                                <i class="fas fa-trash mr-1"></i>Delete
+                            </button>` : ''}
+                        </div>
                     </td>
                 </tr>`).join('');
 
             if (usersTable) { usersTable.destroy(); }
-            usersTable = $('#usersTable').DataTable({ pageLength: 10 });
+            usersTable = $('#usersTable').DataTable({
+                pageLength: 10,
+                columnDefs: [
+                    { targets: -1, orderable: false, searchable: false, className: 'dt-center' }
+                ]
+            });
         }
 
         function openEditModal(id, name, email, role, barangay) {
-            document.getElementById('editUserId').value      = id;
-            document.getElementById('editUserName').value    = name;
-            document.getElementById('editUserEmail').value   = email;
+            document.getElementById('editUserId').value       = id;
+            document.getElementById('editUserName').value     = name;
+            document.getElementById('editUserEmail').value    = email;
             document.getElementById('editUserBarangay').value = barangay;
             document.getElementById('editUserDisplay').textContent = `${name} (${email})`;
-            document.getElementById('editUserRole').value    = role;
+            document.getElementById('editUserRole').value     = role;
             document.getElementById('editModal').classList.remove('hidden');
         }
 
         function closeModal() { document.getElementById('editModal').classList.add('hidden'); }
 
         async function saveUserRole() {
-            const id       = document.getElementById('editUserId').value;
+            const id        = document.getElementById('editUserId').value;
             const full_name = document.getElementById('editUserName').value;
-            const email    = document.getElementById('editUserEmail').value;
-            const barangay = document.getElementById('editUserBarangay').value;
-            const role     = document.getElementById('editUserRole').value;
+            const email     = document.getElementById('editUserEmail').value;
+            const barangay  = document.getElementById('editUserBarangay').value;
+            const role      = document.getElementById('editUserRole').value;
 
             const res = await apiPut('/users/update.php', { id, full_name, email, barangay, role });
             if (res.status === 'success') { toastSuccess('User role updated.'); closeModal(); await loadUsers(); }
@@ -168,7 +181,14 @@
         }
 
         async function deleteUser(id) {
-            const result = await Swal.fire({ title: 'Delete User?', text: 'This action cannot be undone.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Yes, delete it!' });
+            const result = await Swal.fire({
+                title: 'Delete User?',
+                text: 'This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                confirmButtonText: 'Yes, delete it!'
+            });
             if (!result.isConfirmed) return;
             const res = await apiDelete('/users/delete.php', { id });
             if (res.status === 'success') { toastSuccess(res.message); await loadUsers(); }
