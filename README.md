@@ -1,7 +1,3 @@
-Commit 1 · File 3 of 3 — README.md
-Create this file at C:/xampp/htdocs/trustgov/README.md
-markdown# TrustGov — Barangay Budget Transparency Portal
-
 A public-facing web application where barangay officials post budgets, projects, and expenses, and citizens can view and submit feedback. Built to demonstrate REST API integration using PHP and MySQL on XAMPP.
 
 ---
